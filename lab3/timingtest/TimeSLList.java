@@ -1,5 +1,7 @@
 package timingtest;
 import edu.princeton.cs.algs4.Stopwatch;
+import org.checkerframework.checker.units.qual.A;
+import sun.tools.tree.DoubleExpression;
 
 /**
  * Created by hug.
@@ -22,7 +24,29 @@ public class TimeSLList {
     }
 
     public static void timeGetLast() {
-        // TODO: YOUR CODE HERE
+        //constant number of operations
+        int OPS = 10000;
+        AList<Integer> Ns = new AList<>();
+        AList<Double> times = new AList<>();
+        AList<Integer> opCounts = new AList<>();
+        SLList<Integer> test_lst;
+        for (int n = 1000; n <= 128000; n *= 2){
+            //Create an SLList
+            test_lst = new SLList<>();
+            //Add N items to the SLList
+            for (int i = 0; i <= n; ++i){
+                test_lst.addLast(0);
+            }
+            Stopwatch sw = new Stopwatch();
+            for (int j = 1; j <= OPS; j++){
+                test_lst.getLast();
+            }
+            Double time_in_sec = sw.elapsedTime();
+            Ns.addLast(n);
+            times.addLast(time_in_sec);
+            opCounts.addLast(OPS);
+        }
+        printTimingTable(Ns, times, opCounts);
     }
 
 }
