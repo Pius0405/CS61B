@@ -15,7 +15,7 @@ package timingtest;
 */
 
 public class AList<Item> {
-    private int RFACTOR = 10;
+    private final int RFACTOR = 2;
     private Item[] items;
     private int size;
 
