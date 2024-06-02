@@ -95,15 +95,15 @@ public class ArrayDeque<T>{
 
     public T get(int index){
         T item = null;
-        int p = nextFirst + 1;
+        int p = nextFirst;
         if (index <= size-1 && index >= 0){
             for (int i = 0; i <= index; ++i){
-                if (i == index){
-                    item = items[p];
-                }
                 ++p;
                 if (p == items.length){
                     p = 0;
+                }
+                if (i == index){
+                    item = items[p];
                 }
             }
         }
@@ -111,13 +111,13 @@ public class ArrayDeque<T>{
     }
 
     public void printDeque(){
-        int p = nextFirst + 1;
+        int p = nextFirst;
         for (int i = 1; i <= size; ++i){
-            System.out.print(items[p] + " ");
             ++p;
             if (p == items.length){
                 p = 0;
             }
+            System.out.print(items[p] + " ");
         }
         System.out.println();
     }
