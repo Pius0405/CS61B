@@ -72,6 +72,17 @@ public class ArrayDequeTest {
             testDeque.addLast(i);
         }
     }
+
+    public static void main(String[] args){
+        ArrayDeque<Integer> testDeque = new ArrayDeque<>();
+        testDeque.addFirst(1);
+        testDeque.removeLast();
+        testDeque.addLast(2);
+        testDeque.removeFirst();
+        testDeque.addLast(3);
+        testDeque.removeFirst();
+        testDeque.addLast(4);
+    }
 }
 
 class TimeArrayDeque {
