@@ -33,7 +33,7 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
     public T removeFirst(){
         T removed = null;
         if (size != 0){
-            if (getUsageFactor() < 0.25){
+            if (getUsageFactor() < 0.25 && size()>= 16){
                 shrinkArr();
             }
             ++nextFirst;
@@ -76,7 +76,7 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
         return removed;
     }
 
-    public void resize(int capacity){
+    private void resize(int capacity){
         T[] new_arr = (T[])new Object[capacity];
         for (int i = 0; i < size; ++i){
             ++nextFirst;
@@ -90,11 +90,11 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
         nextLast = size;
     }
 
-    public double getUsageFactor(){
+    private double getUsageFactor(){
         return (double) (size -1)/items.length;
     }
 
-    public void shrinkArr(){
+    private void shrinkArr(){
         resize(items.length/2);
     }
 

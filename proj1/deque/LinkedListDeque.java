@@ -90,7 +90,7 @@ public class LinkedListDeque<T> implements Deque<T>, Iterable<T> {
     }
 
     //helper function for getRecursive
-    public T recursiveHelper(ListNode<T> n, int index){
+    private T recursiveHelper(ListNode<T> n, int index){
         if (index == 0){
             return n.item;
         }

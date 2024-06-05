@@ -63,14 +63,13 @@ public class ArrayDequeTest {
         }
     }
 
-    public static void main(String[] args){
-        timeArrayDequeConstruction();
-        ArrayDeque<Integer> arrDeque = new ArrayDeque<>();
-        arrDeque.addFirst(1);
-        arrDeque.addLast(2);
-        arrDeque.addLast(3);
-        for (int i : arrDeque){
-            System.out.println(i);
+    @Test
+    public void randomizedTest2(){
+        int N = 10000;
+        ArrayDeque<Integer> testDeque = new ArrayDeque<>();
+        for (int i = 0; i < N; i++){
+            testDeque.addFirst(i);
+            testDeque.addLast(i);
         }
     }
 }
