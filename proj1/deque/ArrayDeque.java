@@ -63,7 +63,7 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
     public T removeLast(){
         T removed = null;
         if (size != 0){
-            if (getUsageFactor() < 0.25){
+            if (getUsageFactor() < 0.25 && size()>= 16){
                 shrinkArr();
             }
             --nextLast;
@@ -164,15 +164,15 @@ public class ArrayDeque<T> implements Deque<T>, Iterable<T> {
         if (o == this){
             return true;
         }
-        else if (o instanceof ArrayDeque){
-            ArrayDeque<T> oNew = (ArrayDeque<T>) o;
-            if (oNew.size() == this.size()){
+        else if (o instanceof Deque){
+            Deque<T> other = (Deque<T>) o;
+            if (size() == other.size()){
                 for (int i = 0; i < size; ++i){
-                    if (oNew.get(i) != this.get(i)){
+                    if (other.get(i) != get(i)){
                         return false;
                     }
-                return true;
                 }
+                return true;
             }
         }
         return false;
