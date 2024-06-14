@@ -41,8 +41,8 @@ public class Dog implements Serializable { // TODO
      */
     public static Dog fromFile(String name) {
         // TODO (hint: look at the Utils file)
-        File dog_file = join(DOG_FOLDER, name);
-        return readObject(dog_file, Dog.class);
+        File dogFile = join(DOG_FOLDER, name);
+        return readObject(dogFile, Dog.class);
     }
 
     /**
@@ -60,7 +60,7 @@ public class Dog implements Serializable { // TODO
     public void saveDog() {
         // TODO
         File dog_file = join(DOG_FOLDER, name);
-        writeObject(dog_file, Dog.class);
+        writeObject(dog_file, this);
     }
 
     @Override
