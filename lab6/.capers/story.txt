@@ -1,0 +1,9 @@
+Hello world! <your name here>!
+Welcome to Atlanta, I'm Steve, your tour guide!
+Check you inventory for the map of Great Atlanta!
+Select your first destinaton:
+Welcome to Oregon!
+First,.....
+Head on to the nearest store!
+Select a weapon from the store!
+Runcd ..cd ..!
