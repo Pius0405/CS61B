@@ -2,25 +2,62 @@ package gitlet;
 
 // TODO: any imports you need here
 
-import java.util.Date; // TODO: You'll likely use this in this class
+import java.io.File;
+import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.HashMap;
+import java.io.Serializable;
+import java.util.Locale;
+import static gitlet.Repository.*;
+import static gitlet.Utils.*;
+
 
 /** Represents a gitlet commit object.
  *  TODO: It's a good idea to give a description here of what else this Class
  *  does at a high level.
  *
- *  @author TODO
+ *  @author Pius
  */
-public class Commit {
-    /**
-     * TODO: add instance variables here.
-     *
-     * List all instance variables of the Commit class here with a useful
-     * comment above them describing what that variable represents and how that
-     * variable is used. We've provided one example for `message`.
-     */
+public class Commit implements Serializable{
 
-    /** The message of this Commit. */
-    private String message;
+    private String ID;
+    private final String message;
+    // Gitlet allows at most two parents for each commit
+    private final String[] parents;
+    private HashMap<String,String> trackedFiles;
+    private final Date timestamp;
 
-    /* TODO: fill in the rest of this class. */
+    public Commit(Date currentTime, String[] parents, String message){
+        this.message = message;
+        this.parents = parents;
+        this.timestamp = currentTime;
+        this.trackedFiles = new HashMap<>();
+    }
+
+    public String timestampInString(){
+        DateFormat dateFormat = new SimpleDateFormat("EEE MM d HH:mm:ss yyyy Z", Locale.US);
+        return dateFormat.format(timestamp);
+    }
+
+    public void setID(){
+        ID = sha1(message, parents.toString(), timestampInString(), trackedFiles.toString());
+    }
+
+    public String getID(){
+        return ID;
+    }
+
+
+    public void store(){
+        byte[] serializedCommit = serialize(this);
+        try{
+            File f = join(COMMITS, ID);
+            f.createNewFile();
+            writeContents(f, serializedCommit);
+        }catch(IOException e){
+            error("IOException: Cannot create file or directory");
+        }
+    }
 }
