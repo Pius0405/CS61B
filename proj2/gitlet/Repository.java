@@ -112,6 +112,12 @@ public class Repository {
             if (join(CWD, filename).exists()){
                 File destination = join(STAGED_FOR_REMOVAL, filename);
                 join(CWD, filename).renameTo(destination);
+            } else {
+                try{
+                    join(STAGED_FOR_REMOVAL, filename).createNewFile();
+                } catch (IOException e){
+                    throw error("IOException: Cannot create file or directory");
+                }
             }
         }
         if (stagedFileBlobID != null){
