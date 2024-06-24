@@ -67,11 +67,15 @@ public class Repository {
         Blob fileBlob = new Blob(readContentsAsString(join(CWD, filename)), filename);
         Stage staging_area = getStagingArea();
         if (fileBlob.getID().equals(currentCommit.getTrackedFileBlobID(filename))){
-            join(STAGED_FOR_ADD, fileBlob.getID()).delete();
             join(STAGED_FOR_REMOVAL, filename).delete();
-            staging_area.deleteRec(filename);
+            if (staging_area.getStagedFileBlobID(filename) != null){
+                join(STAGED_FOR_ADD, staging_area.getStagedFileBlobID(filename)).delete();
+                staging_area.deleteRec(filename);
+            }
         } else {
-            join(STAGED_FOR_ADD, staging_area.getStagedFileBlobID(filename)).delete();
+            if (staging_area.getStagedFileBlobID(filename) != null){
+                join(STAGED_FOR_ADD, staging_area.getStagedFileBlobID(filename)).delete();
+            }
             writeObject(join(STAGED_FOR_ADD, fileBlob.getID()), fileBlob);
             staging_area.addRec(filename, fileBlob.getID());
         }

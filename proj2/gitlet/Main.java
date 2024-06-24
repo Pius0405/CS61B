@@ -1,5 +1,7 @@
 package gitlet;
 
+import java.util.Arrays;
+
 import static gitlet.Repository.*;
 import static gitlet.Utils.*;
 /** Driver class for Gitlet, a subset of the Git version-control system.
@@ -45,6 +47,8 @@ public class Main {
                 break;
             case "status":
                 status();
+                break;
+            case "checkout":
                 break;
             default:
                 exit("No command with that name exists.");
