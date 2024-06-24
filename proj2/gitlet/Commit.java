@@ -85,6 +85,18 @@ public class Commit implements Serializable{
     public String getTrackedFileBlobID(String filename) {
         return trackedFiles.get(filename);
     }
+
+    public static Commit findCommit(String searchID){
+        if (searchID.length() == UID_LENGTH){
+            return readObject(join(COMMITS, searchID), Commit.class);
+        }
+        for (String commitID: plainFilenamesIn(COMMITS)){
+            if (commitID.substring(0, searchID.length()).equals(searchID)){
+                return readObject(join(COMMITS, commitID), Commit.class);
+            }
+        }
+        return null;
+    }
 }
 
 

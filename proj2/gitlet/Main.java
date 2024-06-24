@@ -22,36 +22,42 @@ public class Main {
                 init();
                 break;
             case "add":
-                verifyLength(args.length, 2);
+                inGitletDir();
                 add(args[1]);
                 break;
             case "commit":
+                inGitletDir();
                 if (args.length == 1 || args[1].equals("")){
                     exit("Please enter a commit message.");
                 }
                 commit(args[1]);
                 break;
             case "rm":
-                verifyLength(args.length, 2);
+                inGitletDir();
                 rm(args[1]);
                 break;
             case "log":
+                inGitletDir();
                 log();
                 break;
             case "global-log":
+                inGitletDir();
                 global_log();
                 break;
             case "find":
-                verifyLength(args.length, 2);
+                inGitletDir();
                 find(args[1]);
                 break;
             case "status":
+                inGitletDir();
                 status();
                 break;
             case "checkout":
+                inGitletDir();
                 checkout(Arrays.copyOfRange(args, 1, args.length));
                 break;
             case "branch":
+                inGitletDir();
                 branch(args[1]);
                 break;
             default:
@@ -59,9 +65,9 @@ public class Main {
         }
     }
 
-    public static void verifyLength(int argsLength, int expectedLength) {
-        if (argsLength != expectedLength){
-            exit("No command with that name exists.");
+    public static void inGitletDir(){
+        if (! GITLET_DIR.exists()){
+            exit("Not in an initialized Gitlet directory.");
         }
     }
 }
