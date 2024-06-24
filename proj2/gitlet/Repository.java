@@ -255,29 +255,31 @@ public class Repository {
             }
         }
 
-        if (join(HEADS, args[0]).exists()){
-            if (args[0].equals(readContentsAsString(HEAD))){
-                exit("No need to checkout the current branch");
-            } else {
-                String targetCommitID = readContentsAsString(join(HEADS, args[0]));
-                Commit targetCommit = readObject(join(COMMITS, args[0]), Commit.class);
-                Commit currentCommit = getCurrentCommit();
-                Set<String> trackedInCurrentBranch = currentCommit.getTrackedFiles().keySet();
-                Set<String> trackedInTargetBranch = targetCommit.getTrackedFiles().keySet();
-                for (String filename: plainFilenamesIn(CWD)){
-                    if (! trackedInCurrentBranch.contains(filename) && trackedInTargetBranch.contains(filename)){
-                        exit("There is an untracked file in the way; delete it, or add and commit it first");
+        if (args.length == 1){
+            if (join(HEADS, args[0]).exists()){
+                if (args[0].equals(readContentsAsString(HEAD))){
+                    exit("No need to checkout the current branch");
+                } else {
+                    String targetCommitID = readContentsAsString(join(HEADS, args[0]));
+                    Commit targetCommit = readObject(join(COMMITS, args[0]), Commit.class);
+                    Commit currentCommit = getCurrentCommit();
+                    Set<String> trackedInCurrentBranch = currentCommit.getTrackedFiles().keySet();
+                    Set<String> trackedInTargetBranch = targetCommit.getTrackedFiles().keySet();
+                    for (String filename: plainFilenamesIn(CWD)){
+                        if (! trackedInCurrentBranch.contains(filename) && trackedInTargetBranch.contains(filename)){
+                            exit("There is an untracked file in the way; delete it, or add and commit it first");
+                        }
+                    }
+                    for (String filename: trackedInTargetBranch){
+                        String newBlobID = targetCommit.getTrackedFileBlobID(filename);
+                        Blob newBlob = readObject(join(BLOBS, newBlobID), Blob.class);
+                        File newFile = new File(CWD.getPath(), filename);
+                        writeContents(newFile, newBlob.getContents());
                     }
                 }
-                for (String filename: trackedInTargetBranch){
-                    String newBlobID = targetCommit.getTrackedFileBlobID(filename);
-                    Blob newBlob = readObject(join(BLOBS, newBlobID), Blob.class);
-                    File newFile = new File(CWD.getPath(), filename);
-                    writeContents(newFile, newBlob.getContents());
-                }
+            } else {
+                exit("No such branch exists.");
             }
-        } else {
-            exit("No such branch exists.");
         }
         exit("Incorrect operands");
     }
