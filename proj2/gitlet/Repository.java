@@ -107,7 +107,7 @@ public class Repository {
         Stage staging_area = getStagingArea();
         String trackedFileBlobID = currentCommit.getTrackedFileBlobID(filename);
         String stagedFileBlobID = staging_area.getStagedFileBlobID(filename);
-        if (trackedFileBlobID != null && stagedFileBlobID != null){
+        if (trackedFileBlobID == null && stagedFileBlobID == null){
             exit("No reason to remove the file.");
         }
         if (trackedFileBlobID != null){
@@ -129,22 +129,20 @@ public class Repository {
         staging_area.store();
     }
 
-    //Helper method for log and global-log to print out a commit
-    private static void displayCommit(Commit currentCommit){
-        System.out.println("===");
-        System.out.println("commit " + currentCommit.getID());
-        System.out.println("Date: " + currentCommit.timestampInString());
-        System.out.println(currentCommit.getMessage());
-        if (! currentCommit.getParentID(1).equals("")){
-            System.out.println("Merged development into master.");
-        }
-        System.out.println();
-    }
-
     public static void log(){
         Commit currentCommit = getCurrentCommit();
         while (true){
-            displayCommit(currentCommit);
+            System.out.println("===");
+            System.out.println("commit " + currentCommit.getID());
+            if (! currentCommit.getParentID(1).equals("")){
+                System.out.println("Merge: " + currentCommit.getParentID(0).substring(0,7) + " " + currentCommit.getParentID(1).substring(0,7));
+                System.out.println("Date: " + currentCommit.timestampInString());
+                System.out.println("Merged development into master.");
+            } else{
+                System.out.println("Date: " + currentCommit.timestampInString());
+                System.out.println(currentCommit.getMessage());
+            }
+            System.out.println();
             if (currentCommit.getParentID(0).equals("")){
                 break;
             }
@@ -155,7 +153,17 @@ public class Repository {
     public static void global_log(){
         for (File file: COMMITS.listFiles()){
             Commit currentCommit = readObject(file, Commit.class);
-            displayCommit(currentCommit);
+            System.out.println("===");
+            System.out.println("commit " + currentCommit.getID());
+            if (! currentCommit.getParentID(1).equals("")){
+                System.out.println("Merge: " + currentCommit.getParentID(0).substring(0,7) + " " + currentCommit.getParentID(1).substring(0,7));
+                System.out.println("Date: " + currentCommit.timestampInString());
+                System.out.println("Merged development into master.");
+            } else{
+                System.out.println("Date: " + currentCommit.timestampInString());
+                System.out.println(currentCommit.getMessage());
+            }
+            System.out.println();
         }
     }
 
