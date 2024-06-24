@@ -49,7 +49,7 @@ public class Main {
                 status();
                 break;
             case "checkout":
-                String[] newArgs = Arrays.copyOfRange(args, 1, args.length);
+                checkout(Arrays.copyOfRange(args, 1, args.length));
                 break;
             default:
                 exit("No command with that name exists.");
