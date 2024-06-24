@@ -2,9 +2,8 @@ package gitlet;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
+
 import static gitlet.Utils.*;
 import static gitlet.Commit.*;
 import static gitlet.Stage.*;
@@ -54,7 +53,7 @@ public class Repository {
         }catch(IOException e){
             throw error("IOException: Cannot create file or directory");
         }
-        Commit initialCommit = new Commit(new Date(0), new String[] {"", ""}, "initial commit", new HashMap<String, String>());
+        Commit initialCommit = new Commit(new Date(0), new String[] {"", ""}, "initial commit.", new HashMap<String, String>());
         initialCommit.setID();
         initialCommit.store();
         writeContents(MASTER, initialCommit.getID());
@@ -106,7 +105,7 @@ public class Repository {
         Stage staging_area = getStagingArea();
         String trackedFileBlobID = currentCommit.getTrackedFileBlobID(filename);
         String stagedFileBlobID = staging_area.getStagedFileBlobID(filename);
-        if (trackedFileBlobID == null &&  stagedFileBlobID == null){
+        if (trackedFileBlobID == null && stagedFileBlobID == null){
             exit("No reason to remove the file.");
         }
         if (trackedFileBlobID != null){
@@ -128,7 +127,7 @@ public class Repository {
         System.out.println("Date: " + currentCommit.timestampInString());
         System.out.println(currentCommit.getMessage());
         if (! currentCommit.getParentID(1).equals("")){
-            System.out.println("Merged development into master");
+            System.out.println("Merged development into master.");
         }
         System.out.println();
     }
@@ -165,6 +164,51 @@ public class Repository {
         if (! found){
             System.out.println("Found no commit with that message.");
         }
+    }
+
+    public static void status(){
+        ArrayList<String> info = new ArrayList<>();
+        System.out.println("=== Branches ===");
+        String currentBranch = readContentsAsString(HEAD);
+        for (String branch: plainFilenamesIn(HEADS)){
+            if (currentBranch.equals(branch)){
+                branch = "*" + branch;
+            }
+            info.add(branch);
+        }
+        Collections.sort(info);
+        for (String name: info){
+            System.out.println(name);
+        }
+        System.out.println();
+        info.clear();
+
+        System.out.println("=== Staged Files ===");
+        for (File blobFile : STAGED_FOR_ADD.listFiles()){
+             info.add(readObject(blobFile, Blob.class).getFilename());
+        }
+        Collections.sort(info);
+        for (String name: info){
+            System.out.println(name);
+        }
+        System.out.println();
+        info.clear();
+
+        System.out.println("=== Removed Files ===");
+        for (String filename : plainFilenamesIn(STAGED_FOR_REMOVAL)){
+            info.add(filename);
+        }
+        Collections.sort(info);
+        for (String name: info){
+            System.out.println(name);
+        }
+        System.out.println();
+        info.clear();
+
+        System.out.println("=== Modifications Not Staged For Commit ===");
+        System.out.println();
+        System.out.println("=== Untracked Files ===");
+        System.out.println();
     }
 
     //Utility methods

@@ -40,6 +40,8 @@ public class Main {
             case "find":
                 verifyLength(args.length, 2);
                 find(args[1]);
+            case "status":
+                status();
             default:
                 exit("No command with that name exists.");
         }
