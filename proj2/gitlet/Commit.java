@@ -62,7 +62,7 @@ public class Commit implements Serializable{
         trackedFiles.remove(filename);
     }
 
-    public void resetTrackRec(String filename, String blobID) {
+    public void renewTrackRec(String filename, String blobID) {
         trackedFiles.put(filename, blobID);
     }
 

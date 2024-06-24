@@ -2,9 +2,10 @@ package gitlet;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Set;
 import static gitlet.Utils.*;
@@ -98,7 +99,7 @@ public class Repository {
         }
         Stage staging_area = getStagingArea();
         for (String filename: staging_area.getStagedFiles()){
-            newCommit.resetTrackRec(filename, staging_area.getStagedFileBlobID(filename));
+            newCommit.renewTrackRec(filename, staging_area.getStagedFileBlobID(filename));
         }
         moveAllFiles(STAGED_FOR_ADD, BLOBS);
         staging_area.clear();
@@ -222,8 +223,6 @@ public class Repository {
         info.clear();
 
         System.out.println("=== Modifications Not Staged For Commit ===");
-
-
         System.out.println();
         System.out.println("=== Untracked Files ===");
         System.out.println();
