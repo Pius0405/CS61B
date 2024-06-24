@@ -22,13 +22,13 @@ public class Main {
                 add(args[1]);
                 break;
             default:
-                throw error("No command with that name exists.");
+                exit("No command with that name exists.");
         }
     }
 
     public static void verifyLength(int argsLength, int expectedLength){
         if (argsLength != expectedLength){
-            throw error("Incorrect operands.");
+            exit("No command with that name exists.");
         }
     }
 }

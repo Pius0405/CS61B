@@ -35,7 +35,7 @@ public class Repository {
 
     public static void init(){
         if (GITLET_DIR.exists()){
-            throw error("A Gitlet version-control system already exists in the current directory");
+            exit("A Gitlet version-control system already exists in the current directory");
         }
         try{
             GITLET_DIR.mkdir();
@@ -61,7 +61,7 @@ public class Repository {
 
     public static void add(String filename){
         if (! join(CWD, filename).exists()){
-            throw error("File does not exists.");
+            exit("File does not exists.");
         }
         Commit currentCommit = getCurrentCommit();
         Blob fileBlob = new Blob(readContentsAsString(join(CWD, filename)), filename);
@@ -70,5 +70,10 @@ public class Repository {
         } else {
             writeObject(join(STAGED_FOR_ADD, fileBlob.getID()), fileBlob);
         }
+    }
+
+    public static void exit(String message){
+        System.out.println(message);
+        System.exit(0);
     }
 }
