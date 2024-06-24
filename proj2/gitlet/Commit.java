@@ -37,8 +37,8 @@ public class Commit implements Serializable{
     }
 
     public String timestampInString(){
-        DateFormat dateFormat = new SimpleDateFormat("EEE MM d HH:mm:ss yyyy Z", Locale.US);
-        return dateFormat.format(timestamp);
+        DateFormat dateFormatter = new SimpleDateFormat("EEE MMM d HH:mm:ss yyyy Z", Locale.US);
+        return dateFormatter.format(timestamp);
     }
 
     public void setID(){

@@ -58,7 +58,8 @@ public class Repository {
         initialCommit.store();
         writeContents(MASTER, initialCommit.getID());
         writeContents(HEAD, "master");
-        createStagingArea();
+        Stage staging_area = new Stage();
+        staging_area.store();
     }
 
     public static void add(String filename){
@@ -71,10 +72,10 @@ public class Repository {
         if (fileBlob.getID().equals(currentCommit.getTrackedFileBlobID(filename))){
             join(STAGED_FOR_ADD, fileBlob.getID()).delete();
             staging_area.deleteRec(filename);
-
         } else {
             writeObject(join(STAGED_FOR_ADD, fileBlob.getID()), fileBlob);
             staging_area.addRec(filename, fileBlob.getID());
+            staging_area.store();
         }
     }
 
@@ -105,7 +106,7 @@ public class Repository {
         Stage staging_area = getStagingArea();
         String trackedFileBlobID = currentCommit.getTrackedFileBlobID(filename);
         String stagedFileBlobID = staging_area.getStagedFileBlobID(filename);
-        if (trackedFileBlobID == null && stagedFileBlobID == null){
+        if (trackedFileBlobID != null && stagedFileBlobID != null){
             exit("No reason to remove the file.");
         }
         if (trackedFileBlobID != null){
@@ -124,6 +125,7 @@ public class Repository {
             staging_area.deleteRec(filename);
             join(STAGED_FOR_ADD, stagedFileBlobID).delete();
         }
+        staging_area.store();
     }
 
     //Helper method for log and global-log to print out a commit
@@ -231,10 +233,7 @@ public class Repository {
         // Move each file from source directory to destination directory
         for (File file : files) {
             if (file.isFile()) { // Ensure we only move files, not directories
-                File newFile = new File(destinationDir, file.getName());
-                if (!file.renameTo(newFile)) {
-                    System.out.println("Failed to move file: " + file.getName());
-                }
+                file.renameTo(join(destinationDir, file.getName()));
             }
         }
     }
