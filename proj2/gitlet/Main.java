@@ -51,6 +51,9 @@ public class Main {
             case "checkout":
                 checkout(Arrays.copyOfRange(args, 1, args.length));
                 break;
+            case "branch":
+                branch(args[1]);
+                break;
             default:
                 exit("No command with that name exists.");
         }

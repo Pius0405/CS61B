@@ -287,6 +287,20 @@ public class Repository {
         exit("Incorrect operands");
     }
 
+    public static void branch(String branchName){
+        File newBranch = join(HEADS, branchName);
+        if (newBranch.exists()){
+            exit("A branch with that name already exists.");
+        }
+        try{
+            newBranch.createNewFile();
+        } catch (IOException e){
+            throw error("IOException: Cannot create file or directory");
+        }
+        String currentCommitID = getCurrentCommit().getID();
+        writeContents(newBranch, currentCommitID);
+    }
+
     //Utility methods
 
     public static void exit(String message) {
