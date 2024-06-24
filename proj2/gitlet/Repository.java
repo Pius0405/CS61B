@@ -279,6 +279,7 @@ public class Repository {
                     Stage staging_area = getStagingArea();
                     staging_area.clear();
                     writeContents(HEAD, args[0]);
+                    return;
                 }
             } else {
                 exit("No such branch exists.");
