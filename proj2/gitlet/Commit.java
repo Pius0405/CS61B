@@ -78,11 +78,13 @@ public class Commit implements Serializable{
 
     public static Commit getCurrentCommit() {
         String currentBranch = readContentsAsString(HEAD);
-        String curCommitID = readContentsAsString(join(HEADS, currentBranch));
-        return readObject(join(COMMITS, curCommitID), Commit.class);
+        String currentCommitID = readContentsAsString(join(HEADS, currentBranch));
+        return readObject(join(COMMITS, currentCommitID), Commit.class);
     }
 
     public String getTrackedFileBlobID(String filename) {
         return trackedFiles.get(filename);
     }
 }
+
+

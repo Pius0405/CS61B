@@ -19,6 +19,10 @@ public class Blob implements Serializable {
         return ID;
     }
 
+    public String getContents(){
+        return contents;
+    }
+
     public String getFilename() {
         return filename;
     }

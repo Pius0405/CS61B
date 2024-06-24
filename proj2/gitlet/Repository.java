@@ -2,8 +2,11 @@ package gitlet;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
-
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Collections;
+import java.util.Set;
 import static gitlet.Utils.*;
 import static gitlet.Commit.*;
 import static gitlet.Stage.*;
@@ -226,7 +229,58 @@ public class Repository {
         System.out.println();
     }
 
+    public static void checkout(String[] args){
+        if (args.length == 3){
+            if (join(COMMITS, args[0]).exists()){
+                Commit targetCommit = readObject(join(COMMITS, args[0]), Commit.class);
+                String targetBlobID = targetCommit.getTrackedFileBlobID(args[2]);
+                if (targetBlobID != null){
+                    Blob targetBlob = readObject(join(BLOBS, targetBlobID), Blob.class);
+                    writeContents(join(CWD, args[2]), targetBlob.getContents());
+                    return;
+                }
+                exit("File does not exists in that commit.");
+            }
+            exit("No commit with that id exists.");
+        }
 
+        if (args.length == 2){
+            Commit currentCommit = getCurrentCommit();
+            String oldVersionBlobID = currentCommit.getTrackedFileBlobID(args[1]);
+            if (oldVersionBlobID != null){
+                Blob oldBlob = readObject(join(BLOBS, oldVersionBlobID), Blob.class);
+                writeContents(join(CWD, args[1]), oldBlob.getContents());
+            } else {
+                exit("File does not exists in that commit.");
+            }
+        }
+
+        if (join(HEADS, args[0]).exists()){
+            if (args[0].equals(readContentsAsString(HEAD))){
+                exit("No need to checkout the current branch");
+            } else {
+                String targetCommitID = readContentsAsString(join(HEADS, args[0]));
+                Commit targetCommit = readObject(join(COMMITS, args[0]), Commit.class);
+                Commit currentCommit = getCurrentCommit();
+                Set<String> trackedInCurrentBranch = currentCommit.getTrackedFiles().keySet();
+                Set<String> trackedInTargetBranch = targetCommit.getTrackedFiles().keySet();
+                for (String filename: plainFilenamesIn(CWD)){
+                    if (! trackedInCurrentBranch.contains(filename) && trackedInTargetBranch.contains(filename)){
+                        exit("There is an untracked file in the way; delete it, or add and commit it first");
+                    }
+                }
+                for (String filename: trackedInTargetBranch){
+                    String newBlobID = targetCommit.getTrackedFileBlobID(filename);
+                    Blob newBlob = readObject(join(BLOBS, newBlobID), Blob.class);
+                    File newFile = new File(CWD.getPath(), filename);
+                    writeContents(newFile, newBlob.getContents());
+                }
+            }
+        } else {
+            exit("No such branch exists.");
+        }
+
+    }
 
     //Utility methods
 
