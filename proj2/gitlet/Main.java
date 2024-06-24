@@ -1,7 +1,7 @@
 package gitlet;
 
 import static gitlet.Repository.*;
-
+import static gitlet.Utils.*;
 /** Driver class for Gitlet, a subset of the Git version-control system.
  *  @author TODO
  */
@@ -18,9 +18,16 @@ public class Main {
                 init();
                 break;
             case "add":
-                // TODO: handle the `add [filename]` command
+                verifyLength(args.length, 2);
+                add(args[1]);
                 break;
             // TODO: FILL THE REST IN
+        }
+    }
+
+    public static void verifyLength(int argsLength, int expectedLength){
+        if (argsLength != expectedLength){
+            error("Incorrect operands.");
         }
     }
 }

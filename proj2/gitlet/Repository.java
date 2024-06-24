@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import static gitlet.Utils.*;
+import static gitlet.Commit.*;
 
 // TODO: any imports you need here
 
@@ -56,5 +57,18 @@ public class Repository {
         initialCommit.store();
         writeContents(MASTER, initialCommit.getID());
         writeContents(HEAD, MASTER.getPath());
+    }
+
+    public static void add(String filename){
+        if (! join(CWD, filename).exists()){
+            error("File does not exists.");
+        }
+        Commit currentCommit = getCurrentCommit();
+        Blob fileBlob = new Blob(readContentsAsString(join(CWD, filename)), filename);
+        if (fileBlob.getID().equals(currentCommit.getTrackedFileBlobID(filename))){
+            join(STAGED_FOR_ADD, fileBlob.getID()).delete();
+        } else {
+            writeObject(join(STAGED_FOR_ADD, fileBlob.getID()), fileBlob);
+        }
     }
 }

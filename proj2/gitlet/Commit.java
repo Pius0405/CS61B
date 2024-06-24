@@ -49,15 +49,23 @@ public class Commit implements Serializable{
         return ID;
     }
 
-
     public void store(){
-        byte[] serializedCommit = serialize(this);
         try{
             File f = join(COMMITS, ID);
             f.createNewFile();
-            writeContents(f, serializedCommit);
+            writeObject(f, this);
         }catch(IOException e){
             error("IOException: Cannot create file or directory");
         }
+    }
+
+    public static Commit getCurrentCommit(){
+        String currentBranch = readContentsAsString(HEAD);
+        String curCommitID = readContentsAsString(new File(currentBranch));
+        return readObject(join(COMMITS, curCommitID), Commit.class);
+    }
+
+    public String getTrackedFileBlobID(String filename){
+        return trackedFiles.get(filename);
     }
 }
