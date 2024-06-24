@@ -35,7 +35,7 @@ public class Repository {
 
     public static void init(){
         if (GITLET_DIR.exists()){
-            error("A Gitlet version-control system already exists in the current directory");
+            throw error("A Gitlet version-control system already exists in the current directory");
         }
         try{
             GITLET_DIR.mkdir();
@@ -50,7 +50,7 @@ public class Repository {
             HEAD.createNewFile();
             STAGING.createNewFile();
         }catch(IOException e){
-            error("IOException: Cannot create file or directory");
+            throw error("IOException: Cannot create file or directory");
         }
         Commit initialCommit = new Commit(new Date(0), new String[] {"", ""}, "initial commit");
         initialCommit.setID();
@@ -61,7 +61,7 @@ public class Repository {
 
     public static void add(String filename){
         if (! join(CWD, filename).exists()){
-            error("File does not exists.");
+            throw error("File does not exists.");
         }
         Commit currentCommit = getCurrentCommit();
         Blob fileBlob = new Blob(readContentsAsString(join(CWD, filename)), filename);

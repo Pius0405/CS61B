@@ -55,7 +55,7 @@ public class Commit implements Serializable{
             f.createNewFile();
             writeObject(f, this);
         }catch(IOException e){
-            error("IOException: Cannot create file or directory");
+            throw error("IOException: Cannot create file or directory");
         }
     }
 

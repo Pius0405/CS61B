@@ -21,13 +21,14 @@ public class Main {
                 verifyLength(args.length, 2);
                 add(args[1]);
                 break;
-            // TODO: FILL THE REST IN
+            default:
+                throw error("No command with that name exists.");
         }
     }
 
     public static void verifyLength(int argsLength, int expectedLength){
         if (argsLength != expectedLength){
-            error("Incorrect operands.");
+            throw error("Incorrect operands.");
         }
     }
 }
