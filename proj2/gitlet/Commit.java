@@ -1,7 +1,5 @@
 package gitlet;
 
-// TODO: any imports you need here
-
 import java.io.File;
 import java.io.IOException;
 import java.text.DateFormat;
@@ -15,7 +13,6 @@ import static gitlet.Utils.*;
 
 
 /** Represents a gitlet commit object.
- *  TODO: It's a good idea to give a description here of what else this Class
  *  does at a high level.
  *
  *  @author Pius
@@ -29,63 +26,63 @@ public class Commit implements Serializable{
     private HashMap<String,String> trackedFiles;
     private final Date timestamp;
 
-    public Commit(Date currentTime, String[] parents, String message, HashMap<String, String> trackedFiles){
+    public Commit(Date currentTime, String[] parents, String message, HashMap<String, String> trackedFiles) {
         this.message = message;
         this.parents = parents;
         this.timestamp = currentTime;
         this.trackedFiles = trackedFiles;
     }
 
-    public String timestampInString(){
+    public String timestampInString() {
         DateFormat dateFormatter = new SimpleDateFormat("EEE MMM d HH:mm:ss yyyy Z", Locale.US);
         return dateFormatter.format(timestamp);
     }
 
-    public void setID(){
+    public void setID() {
         ID = sha1(message, parents.toString(), timestampInString(), trackedFiles.toString());
     }
 
-    public String getID(){
+    public String getID() {
         return ID;
     }
 
-    public String getMessage(){
+    public String getMessage() {
         return message;
     }
 
-    public String getParentID(int parentNum){
+    public String getParentID(int parentNum) {
         return parents[parentNum];
     }
 
-    public HashMap<String, String> getTrackedFiles(){
+    public HashMap<String, String> getTrackedFiles() {
         return trackedFiles;
     }
 
-    public void removeTrackRec(String filename){
+    public void removeTrackRec(String filename) {
         trackedFiles.remove(filename);
     }
 
-    public void resetTrackRec(String filename, String blobID){
+    public void resetTrackRec(String filename, String blobID) {
         trackedFiles.put(filename, blobID);
     }
 
-    public void store(){
+    public void store() {
         try{
             File f = join(COMMITS, ID);
             f.createNewFile();
             writeObject(f, this);
-        }catch(IOException e){
+        } catch(IOException e) {
             throw error("IOException: Cannot create file or directory");
         }
     }
 
-    public static Commit getCurrentCommit(){
+    public static Commit getCurrentCommit() {
         String currentBranch = readContentsAsString(HEAD);
         String curCommitID = readContentsAsString(join(HEADS, currentBranch));
         return readObject(join(COMMITS, curCommitID), Commit.class);
     }
 
-    public String getTrackedFileBlobID(String filename){
+    public String getTrackedFileBlobID(String filename) {
         return trackedFiles.get(filename);
     }
 }

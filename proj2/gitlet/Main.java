@@ -11,7 +11,7 @@ public class Main {
      *  <COMMAND> <OPERAND1> <OPERAND2> ... 
      */
     public static void main(String[] args) {
-        if (args.length == 0){
+        if (args.length == 0) {
             exit("Please enter a command");
         }
         String firstArg = args[0];
@@ -51,7 +51,7 @@ public class Main {
         }
     }
 
-    public static void verifyLength(int argsLength, int expectedLength){
+    public static void verifyLength(int argsLength, int expectedLength) {
         if (argsLength != expectedLength){
             exit("No command with that name exists.");
         }

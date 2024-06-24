@@ -9,17 +9,17 @@ public class Blob implements Serializable {
     private final String filename;
     private final String ID;
 
-    public Blob(String contents, String filename){
+    public Blob(String contents, String filename) {
         this.contents = contents;
         this.filename = filename;
         this.ID = sha1(contents, filename);
     }
 
-    public String getID(){
+    public String getID() {
         return ID;
     }
 
-    public String getFilename(){
+    public String getFilename() {
         return filename;
     }
 }
