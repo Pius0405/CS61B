@@ -135,8 +135,11 @@ public class Repository {
 
     public static void log(){
         Commit currentCommit = getCurrentCommit();
-        while (currentCommit != null){
+        while (true){
             displayCommit(currentCommit);
+            if (currentCommit.getParentID(0).equals("")){
+                break;
+            }
             currentCommit = readObject(join(COMMITS, currentCommit.getParentID(0)), Commit.class);
         }
     }
@@ -148,6 +151,21 @@ public class Repository {
         }
     }
 
+    public static void find(String searchMessage){
+        boolean found = false;
+        for (File file: COMMITS.listFiles()){
+            Commit currentCommit = readObject(file, Commit.class);
+            if (currentCommit.getMessage().equals(searchMessage)){
+                System.out.println(currentCommit.getID());
+                if (! found) {
+                    found = true;
+                }
+            }
+        }
+        if (! found){
+            System.out.println("Found no commit with that message.");
+        }
+    }
 
     //Utility methods
 

@@ -37,6 +37,9 @@ public class Main {
             case "global-log":
                 global_log();
                 break;
+            case "find":
+                verifyLength(args.length, 2);
+                find(args[1]);
             default:
                 exit("No command with that name exists.");
         }
