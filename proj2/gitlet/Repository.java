@@ -53,7 +53,7 @@ public class Repository {
         }catch(IOException e){
             throw error("IOException: Cannot create file or directory");
         }
-        Commit initialCommit = new Commit(new Date(0), new String[] {"", ""}, "initial commit.", new HashMap<String, String>());
+        Commit initialCommit = new Commit(new Date(0), new String[] {"", ""}, "initial commit", new HashMap<String, String>());
         initialCommit.setID();
         initialCommit.store();
         writeContents(MASTER, initialCommit.getID());
@@ -129,21 +129,25 @@ public class Repository {
         staging_area.store();
     }
 
+    private static void printCommit(Commit currentCommit){
+        System.out.println("===");
+        System.out.println("commit " + currentCommit.getID());
+        if (! currentCommit.getParentID(1).equals("")){
+            System.out.println("Merge: " + currentCommit.getParentID(0).substring(0,7) + " " + currentCommit.getParentID(1).substring(0,7));
+            System.out.println("Date: " + currentCommit.timestampInString());
+            System.out.println("Merged development into master.");
+        } else{
+            System.out.println("Date: " + currentCommit.timestampInString());
+            System.out.println(currentCommit.getMessage());
+        }
+        System.out.println();
+    }
+
     public static void log(){
         Commit currentCommit = getCurrentCommit();
         while (true){
-            System.out.println("===");
-            System.out.println("commit " + currentCommit.getID());
-            if (! currentCommit.getParentID(1).equals("")){
-                System.out.println("Merge: " + currentCommit.getParentID(0).substring(0,7) + " " + currentCommit.getParentID(1).substring(0,7));
-                System.out.println("Date: " + currentCommit.timestampInString());
-                System.out.println("Merged development into master.");
-            } else{
-                System.out.println("Date: " + currentCommit.timestampInString());
-                System.out.println(currentCommit.getMessage());
-            }
-            System.out.println();
-            if (currentCommit.getParentID(0).equals("")){
+            printCommit(currentCommit);
+            if (currentCommit.getParentID(0).isEmpty()){
                 break;
             }
             currentCommit = readObject(join(COMMITS, currentCommit.getParentID(0)), Commit.class);
@@ -153,17 +157,7 @@ public class Repository {
     public static void global_log(){
         for (File file: COMMITS.listFiles()){
             Commit currentCommit = readObject(file, Commit.class);
-            System.out.println("===");
-            System.out.println("commit " + currentCommit.getID());
-            if (! currentCommit.getParentID(1).equals("")){
-                System.out.println("Merge: " + currentCommit.getParentID(0).substring(0,7) + " " + currentCommit.getParentID(1).substring(0,7));
-                System.out.println("Date: " + currentCommit.timestampInString());
-                System.out.println("Merged development into master.");
-            } else{
-                System.out.println("Date: " + currentCommit.timestampInString());
-                System.out.println(currentCommit.getMessage());
-            }
-            System.out.println();
+            printCommit(currentCommit);
         }
     }
 
