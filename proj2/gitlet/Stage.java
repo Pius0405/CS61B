@@ -30,7 +30,7 @@ public class Stage implements Serializable {
         return stagedFiles.keySet();
     }
 
-    public String getBlobID(String filename){
+    public String getStagedFileBlobID(String filename){
         return stagedFiles.get(filename);
     }
 

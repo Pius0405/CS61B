@@ -81,7 +81,7 @@ public class Repository {
 
     public static void commit(String message){
         if (STAGED_FOR_ADD.listFiles().length + STAGED_FOR_REMOVAL.listFiles().length == 0){
-            exit("No changes to the commit");
+            exit("No changes to the commit.");
         }
         Commit currentCommit = getCurrentCommit();
         Commit newCommit = new Commit(new Date(), new String[] {currentCommit.getID(), ""}, message, currentCommit.getTrackedFiles());
@@ -92,7 +92,7 @@ public class Repository {
         }
         Stage staging_area = getStagingArea();
         for (String filename: staging_area.getStagedFiles()){
-            newCommit.resetTrackRec(filename, staging_area.getBlobID(filename));
+            newCommit.resetTrackRec(filename, staging_area.getStagedFileBlobID(filename));
         }
         staging_area.clear();
         moveFiles(STAGED_FOR_ADD, BLOBS);
@@ -100,6 +100,19 @@ public class Repository {
         newCommit.store();
         writeContents(join(HEADS, readContentsAsString(HEAD)), newCommit.getID());
     }
+
+    public static void rm(String filename){
+        Commit currentCommit = getCurrentCommit();
+        Stage staging_area = getStagingArea();
+        String trackedFileBlobID = currentCommit.getTrackedFileBlobID(filename);
+        String stagedFileBlobID = staging_area.getStagedFileBlobID(filename);
+        if (trackedFileBlobID == null &&  stagedFileBlobID == null){
+            exit("No reason to remove the file.");
+        }
+    }
+
+
+    //Utility methods
 
     public static void exit(String message){
         System.out.println(message);

@@ -22,10 +22,13 @@ public class Main {
                 add(args[1]);
                 break;
             case "commit":
-                if (args.length == 1){
+                if (args.length == 1 || args[1].equals("")){
                     exit("Please enter a commit message.");
                 }
                 commit(args[1]);
+            case "rm":
+                verifyLength(args.length, 2);
+                rm(args[1]);
             default:
                 exit("No command with that name exists.");
         }
