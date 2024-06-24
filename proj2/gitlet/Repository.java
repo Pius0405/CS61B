@@ -71,12 +71,13 @@ public class Repository {
         Stage staging_area = getStagingArea();
         if (fileBlob.getID().equals(currentCommit.getTrackedFileBlobID(filename))){
             join(STAGED_FOR_ADD, fileBlob.getID()).delete();
+            join(STAGED_FOR_REMOVAL, filename).delete();
             staging_area.deleteRec(filename);
         } else {
             writeObject(join(STAGED_FOR_ADD, fileBlob.getID()), fileBlob);
             staging_area.addRec(filename, fileBlob.getID());
-            staging_area.store();
         }
+        staging_area.store();
     }
 
     public static void commit(String message){
