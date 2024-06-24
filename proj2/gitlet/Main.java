@@ -21,6 +21,11 @@ public class Main {
                 verifyLength(args.length, 2);
                 add(args[1]);
                 break;
+            case "commit":
+                if (args.length == 1){
+                    exit("Please enter a commit message.");
+                }
+                commit(args[1]);
             default:
                 exit("No command with that name exists.");
         }

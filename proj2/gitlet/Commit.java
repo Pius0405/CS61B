@@ -29,11 +29,11 @@ public class Commit implements Serializable{
     private HashMap<String,String> trackedFiles;
     private final Date timestamp;
 
-    public Commit(Date currentTime, String[] parents, String message){
+    public Commit(Date currentTime, String[] parents, String message, HashMap<String, String> trackedFiles){
         this.message = message;
         this.parents = parents;
         this.timestamp = currentTime;
-        this.trackedFiles = new HashMap<>();
+        this.trackedFiles = trackedFiles;
     }
 
     public String timestampInString(){
@@ -49,6 +49,18 @@ public class Commit implements Serializable{
         return ID;
     }
 
+    public HashMap<String, String> getTrackedFiles(){
+        return trackedFiles;
+    }
+
+    public void removeTrackRec(String filename){
+        trackedFiles.remove(filename);
+    }
+
+    public void resetTrackRec(String filename, String blobID){
+        trackedFiles.put(filename, blobID);
+    }
+
     public void store(){
         try{
             File f = join(COMMITS, ID);
@@ -61,7 +73,7 @@ public class Commit implements Serializable{
 
     public static Commit getCurrentCommit(){
         String currentBranch = readContentsAsString(HEAD);
-        String curCommitID = readContentsAsString(new File(currentBranch));
+        String curCommitID = readContentsAsString(join(HEADS, currentBranch));
         return readObject(join(COMMITS, curCommitID), Commit.class);
     }
 

@@ -2,10 +2,12 @@ package gitlet;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
 import static gitlet.Utils.*;
 import static gitlet.Commit.*;
+import static gitlet.Stage.*;
 
 // TODO: any imports you need here
 
@@ -52,11 +54,12 @@ public class Repository {
         }catch(IOException e){
             throw error("IOException: Cannot create file or directory");
         }
-        Commit initialCommit = new Commit(new Date(0), new String[] {"", ""}, "initial commit");
+        Commit initialCommit = new Commit(new Date(0), new String[] {"", ""}, "initial commit", new HashMap<String, String>());
         initialCommit.setID();
         initialCommit.store();
         writeContents(MASTER, initialCommit.getID());
-        writeContents(HEAD, MASTER.getPath());
+        writeContents(HEAD, "master");
+        createStagingArea();
     }
 
     public static void add(String filename){
@@ -65,15 +68,55 @@ public class Repository {
         }
         Commit currentCommit = getCurrentCommit();
         Blob fileBlob = new Blob(readContentsAsString(join(CWD, filename)), filename);
+        Stage staging_area = getStagingArea();
         if (fileBlob.getID().equals(currentCommit.getTrackedFileBlobID(filename))){
             join(STAGED_FOR_ADD, fileBlob.getID()).delete();
+            staging_area.deleteRec(filename);
+
         } else {
             writeObject(join(STAGED_FOR_ADD, fileBlob.getID()), fileBlob);
+            staging_area.addRec(filename, fileBlob.getID());
         }
+    }
+
+    public static void commit(String message){
+        if (STAGED_FOR_ADD.listFiles().length + STAGED_FOR_REMOVAL.listFiles().length == 0){
+            exit("No changes to the commit");
+        }
+        Commit currentCommit = getCurrentCommit();
+        Commit newCommit = new Commit(new Date(), new String[] {currentCommit.getID(), ""}, message, currentCommit.getTrackedFiles());
+        List<String> filenames = plainFilenamesIn(STAGED_FOR_REMOVAL);
+        for (String filename : filenames){
+            newCommit.removeTrackRec(filename);
+            join(STAGED_FOR_REMOVAL, filename).delete();
+        }
+        Stage staging_area = getStagingArea();
+        for (String filename: staging_area.getStagedFiles()){
+            newCommit.resetTrackRec(filename, staging_area.getBlobID(filename));
+        }
+        staging_area.clear();
+        moveFiles(STAGED_FOR_ADD, BLOBS);
+        newCommit.setID();
+        newCommit.store();
+        writeContents(join(HEADS, readContentsAsString(HEAD)), newCommit.getID());
     }
 
     public static void exit(String message){
         System.out.println(message);
         System.exit(0);
     }
+
+    public static void moveFiles(File sourceDir, File destinationDir){
+        File[] files = sourceDir.listFiles();
+        // Move each file from source directory to destination directory
+        for (File file : files) {
+            if (file.isFile()) { // Ensure we only move files, not directories
+                File newFile = new File(destinationDir, file.getName());
+                if (!file.renameTo(newFile)) {
+                    System.out.println("Failed to move file: " + file.getName());
+                }
+            }
+        }
+    }
+
 }
