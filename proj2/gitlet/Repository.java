@@ -110,7 +110,13 @@ public class Repository {
             exit("No reason to remove the file.");
         }
         if (trackedFileBlobID != null){
-            if
+            if (join(CWD, filename).exists()){
+                moveFiles(join(CWD, filename), STAGED_FOR_REMOVAL);
+            }
+        }
+        if (stagedFileBlobID != null){
+            staging_area.deleteRec(filename);
+            join(STAGED_FOR_ADD, stagedFileBlobID).delete();
         }
     }
 
