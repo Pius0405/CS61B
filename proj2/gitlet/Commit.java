@@ -49,6 +49,14 @@ public class Commit implements Serializable{
         return ID;
     }
 
+    public String getMessage(){
+        return message;
+    }
+
+    public String getParentID(int parentNum){
+        return parents[parentNum];
+    }
+
     public HashMap<String, String> getTrackedFiles(){
         return trackedFiles;
     }

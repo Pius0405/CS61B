@@ -26,9 +26,17 @@ public class Main {
                     exit("Please enter a commit message.");
                 }
                 commit(args[1]);
+                break;
             case "rm":
                 verifyLength(args.length, 2);
                 rm(args[1]);
+                break;
+            case "log":
+                log();
+                break;
+            case "global-log":
+                global_log();
+                break;
             default:
                 exit("No command with that name exists.");
         }

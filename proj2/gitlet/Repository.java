@@ -94,8 +94,8 @@ public class Repository {
         for (String filename: staging_area.getStagedFiles()){
             newCommit.resetTrackRec(filename, staging_area.getStagedFileBlobID(filename));
         }
+        moveAllFiles(STAGED_FOR_ADD, BLOBS);
         staging_area.clear();
-        moveFiles(STAGED_FOR_ADD, BLOBS);
         newCommit.setID();
         newCommit.store();
         writeContents(join(HEADS, readContentsAsString(HEAD)), newCommit.getID());
@@ -111,12 +111,40 @@ public class Repository {
         }
         if (trackedFileBlobID != null){
             if (join(CWD, filename).exists()){
-                moveFiles(join(CWD, filename), STAGED_FOR_REMOVAL);
+                File destination = join(STAGED_FOR_REMOVAL, filename);
+                join(CWD, filename).renameTo(destination);
             }
         }
         if (stagedFileBlobID != null){
             staging_area.deleteRec(filename);
             join(STAGED_FOR_ADD, stagedFileBlobID).delete();
+        }
+    }
+
+    //Helper method for log and global-log to print out a commit
+    private static void displayCommit(Commit currentCommit){
+        System.out.println("===");
+        System.out.println("commit " + currentCommit.getID());
+        System.out.println("Date: " + currentCommit.timestampInString());
+        System.out.println(currentCommit.getMessage());
+        if (! currentCommit.getParentID(1).equals("")){
+            System.out.println("Merged development into master");
+        }
+        System.out.println();
+    }
+
+    public static void log(){
+        Commit currentCommit = getCurrentCommit();
+        while (currentCommit != null){
+            displayCommit(currentCommit);
+            currentCommit = readObject(join(COMMITS, currentCommit.getParentID(0)), Commit.class);
+        }
+    }
+
+    public static void global_log(){
+        for (File file: COMMITS.listFiles()){
+            Commit currentCommit = readObject(file, Commit.class);
+            displayCommit(currentCommit);
         }
     }
 
@@ -128,7 +156,7 @@ public class Repository {
         System.exit(0);
     }
 
-    public static void moveFiles(File sourceDir, File destinationDir){
+    private static void moveAllFiles(File sourceDir, File destinationDir){
         File[] files = sourceDir.listFiles();
         // Move each file from source directory to destination directory
         for (File file : files) {
