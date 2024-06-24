@@ -66,7 +66,7 @@ public class Commit implements Serializable{
         trackedFiles.put(filename, blobID);
     }
 
-    public void store() {
+    public void save() {
         try{
             File f = join(COMMITS, ID);
             f.createNewFile();

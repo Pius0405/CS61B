@@ -36,10 +36,10 @@ public class Stage implements Serializable {
 
     public void clear(){
         stagedFiles.clear();
-        store();
+        save();
     }
 
-    public void store(){
+    public void save(){
         writeObject(STAGING, this);
     }
 }

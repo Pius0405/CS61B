@@ -11,14 +11,11 @@ import static gitlet.Stage.*;
 
 
 /** Represents a gitlet repository.
-
  *  does at a high level.
  *
  *  @author Pius
  */
 public class Repository {
-
-
     /** The current working directory. */
     public static final File CWD = new File(System.getProperty("user.dir"));
     /** The .gitlet directory. */
@@ -55,11 +52,11 @@ public class Repository {
         }
         Commit initialCommit = new Commit(new Date(0), new String[] {"", ""}, "initial commit", new HashMap<String, String>());
         initialCommit.setID();
-        initialCommit.store();
+        initialCommit.save();
         writeContents(MASTER, initialCommit.getID());
         writeContents(HEAD, "master");
         Stage staging_area = new Stage();
-        staging_area.store();
+        staging_area.save();
     }
 
     public static void add(String filename) {
@@ -74,10 +71,11 @@ public class Repository {
             join(STAGED_FOR_REMOVAL, filename).delete();
             staging_area.deleteRec(filename);
         } else {
+            join(STAGED_FOR_ADD, staging_area.getStagedFileBlobID(filename)).delete();
             writeObject(join(STAGED_FOR_ADD, fileBlob.getID()), fileBlob);
             staging_area.addRec(filename, fileBlob.getID());
         }
-        staging_area.store();
+        staging_area.save();
     }
 
     public static void commit(String message) {
@@ -98,7 +96,7 @@ public class Repository {
         moveAllFiles(STAGED_FOR_ADD, BLOBS);
         staging_area.clear();
         newCommit.setID();
-        newCommit.store();
+        newCommit.save();
         writeContents(join(HEADS, readContentsAsString(HEAD)), newCommit.getID());
     }
 
@@ -126,7 +124,7 @@ public class Repository {
             staging_area.deleteRec(filename);
             join(STAGED_FOR_ADD, stagedFileBlobID).delete();
         }
-        staging_area.store();
+        staging_area.save();
     }
 
     private static void printCommit(Commit currentCommit) {
@@ -217,6 +215,8 @@ public class Repository {
         info.clear();
 
         System.out.println("=== Modifications Not Staged For Commit ===");
+
+
         System.out.println();
         System.out.println("=== Untracked Files ===");
         System.out.println();
