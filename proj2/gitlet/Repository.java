@@ -81,7 +81,7 @@ public class Repository {
 
     public static void commit(String message){
         if (STAGED_FOR_ADD.listFiles().length + STAGED_FOR_REMOVAL.listFiles().length == 0){
-            exit("No changes to the commit.");
+            exit("No changes added to the commit.");
         }
         Commit currentCommit = getCurrentCommit();
         Commit newCommit = new Commit(new Date(), new String[] {currentCommit.getID(), ""}, message, currentCommit.getTrackedFiles());
@@ -108,6 +108,9 @@ public class Repository {
         String stagedFileBlobID = staging_area.getStagedFileBlobID(filename);
         if (trackedFileBlobID == null &&  stagedFileBlobID == null){
             exit("No reason to remove the file.");
+        }
+        if (trackedFileBlobID != null){
+            if
         }
     }
 
