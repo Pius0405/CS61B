@@ -229,7 +229,7 @@ public class Repository {
     }
 
     public static void checkout(String[] args){
-        if (args.length == 3){
+        if (args.length == 3 && args[1].equals("--")){
             if (join(COMMITS, args[0]).exists()){
                 Commit targetCommit = readObject(join(COMMITS, args[0]), Commit.class);
                 String targetBlobID = targetCommit.getTrackedFileBlobID(args[2]);
@@ -243,12 +243,13 @@ public class Repository {
             exit("No commit with that id exists.");
         }
 
-        if (args.length == 2){
+        if (args.length == 2 && args[0].equals("--")){
             Commit currentCommit = getCurrentCommit();
             String oldVersionBlobID = currentCommit.getTrackedFileBlobID(args[1]);
             if (oldVersionBlobID != null){
                 Blob oldBlob = readObject(join(BLOBS, oldVersionBlobID), Blob.class);
                 writeContents(join(CWD, args[1]), oldBlob.getContents());
+                return;
             } else {
                 exit("File does not exists in that commit.");
             }
@@ -278,7 +279,7 @@ public class Repository {
         } else {
             exit("No such branch exists.");
         }
-
+        exit("Incorrect operands");
     }
 
     //Utility methods
