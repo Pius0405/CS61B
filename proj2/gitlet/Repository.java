@@ -261,7 +261,7 @@ public class Repository {
                     exit("No need to checkout the current branch");
                 } else {
                     String targetCommitID = readContentsAsString(join(HEADS, args[0]));
-                    Commit targetCommit = readObject(join(COMMITS, args[0]), Commit.class);
+                    Commit targetCommit = readObject(join(COMMITS, targetCommitID), Commit.class);
                     Commit currentCommit = getCurrentCommit();
                     Set<String> trackedInCurrentBranch = currentCommit.getTrackedFiles().keySet();
                     Set<String> trackedInTargetBranch = targetCommit.getTrackedFiles().keySet();
