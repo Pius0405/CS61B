@@ -263,14 +263,20 @@ public class Repository {
                     Set<String> trackedInTargetBranch = targetCommit.getTrackedFiles().keySet();
                     for (String filename: plainFilenamesIn(CWD)){
                         if (! trackedInCurrentBranch.contains(filename) && trackedInTargetBranch.contains(filename)){
-                            exit("There is an untracked file in the way; delete it, or add and commit it first");
+                            exit("There is an untracked file in the way; delete it, or add and commit it first.");
                         }
                     }
                     for (String filename: trackedInTargetBranch){
                         String newBlobID = targetCommit.getTrackedFileBlobID(filename);
                         Blob newBlob = readObject(join(BLOBS, newBlobID), Blob.class);
-                        File newFile = new File(CWD.getPath(), filename);
-                        writeContents(newFile, newBlob.getContents());
+                        if (! newBlobID.equals(currentCommit.getTrackedFileBlobID(filename))){
+                            File newFile = join(CWD, filename);
+                            writeContents(newFile, newBlob.getContents());
+                        }
+                    }
+                    trackedInCurrentBranch.removeAll(trackedInTargetBranch);
+                    for (String filename: trackedInCurrentBranch){
+                        restrictedDelete(join(CWD, filename));
                     }
                     Stage staging_area = getStagingArea();
                     staging_area.clear();
