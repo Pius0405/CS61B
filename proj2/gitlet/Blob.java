@@ -19,7 +19,7 @@ public class Blob implements Serializable {
         return ID;
     }
 
-    public String getContents(){
+    public String getContents() {
         return contents;
     }
 

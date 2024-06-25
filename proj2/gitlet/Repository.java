@@ -51,7 +51,7 @@ public class Repository {
             MASTER.createNewFile();
             HEAD.createNewFile();
             STAGING.createNewFile();
-        } catch(IOException e) {
+        } catch (IOException e) {
             throw error("IOException: Cannot create file or directory");
         }
         Commit initialCommit = new Commit(new Date(0), new String[] {"", ""}, "initial commit", new HashMap<String, String>());
@@ -59,50 +59,50 @@ public class Repository {
         initialCommit.save();
         writeContents(MASTER, initialCommit.getID());
         writeContents(HEAD, "master");
-        Stage staging_area = new Stage();
-        staging_area.save();
+        Stage stagingArea = new Stage();
+        stagingArea.save();
     }
 
     public static void add(String filename) {
-        if (! join(CWD, filename).exists()) {
+        if (!join(CWD, filename).exists()) {
             exit("File does not exists.");
         }
         Commit currentCommit = getCurrentCommit();
         Blob fileBlob = new Blob(readContentsAsString(join(CWD, filename)), filename);
-        Stage staging_area = getStagingArea();
-        if (fileBlob.getID().equals(currentCommit.getTrackedFileBlobID(filename))){
+        Stage stagingArea = getStagingArea();
+        if (fileBlob.getID().equals(currentCommit.getTrackedFileBlobID(filename))) {
             join(STAGED_FOR_REMOVAL, filename).delete();
-            if (staging_area.getStagedFileBlobID(filename) != null){
-                join(STAGED_FOR_ADD, staging_area.getStagedFileBlobID(filename)).delete();
-                staging_area.deleteRec(filename);
+            if (stagingArea.getStagedFileBlobID(filename) != null) {
+                join(STAGED_FOR_ADD, stagingArea.getStagedFileBlobID(filename)).delete();
+                stagingArea.deleteRec(filename);
             }
         } else {
-            if (staging_area.getStagedFileBlobID(filename) != null){
-                join(STAGED_FOR_ADD, staging_area.getStagedFileBlobID(filename)).delete();
+            if (stagingArea.getStagedFileBlobID(filename) != null) {
+                join(STAGED_FOR_ADD, stagingArea.getStagedFileBlobID(filename)).delete();
             }
             writeObject(join(STAGED_FOR_ADD, fileBlob.getID()), fileBlob);
-            staging_area.addRec(filename, fileBlob.getID());
+            stagingArea.addRec(filename, fileBlob.getID());
         }
-        staging_area.save();
+        stagingArea.save();
     }
 
     public static void commit(String message) {
-        if (STAGED_FOR_ADD.listFiles().length + STAGED_FOR_REMOVAL.listFiles().length == 0){
+        if (STAGED_FOR_ADD.listFiles().length + STAGED_FOR_REMOVAL.listFiles().length == 0) {
             exit("No changes added to the commit.");
         }
         Commit currentCommit = getCurrentCommit();
         Commit newCommit = new Commit(new Date(), new String[] {currentCommit.getID(), ""}, message, currentCommit.getTrackedFiles());
         List<String> filenames = plainFilenamesIn(STAGED_FOR_REMOVAL);
-        for (String filename : filenames){
+        for (String filename : filenames) {
             newCommit.removeTrackRec(filename);
             join(STAGED_FOR_REMOVAL, filename).delete();
         }
-        Stage staging_area = getStagingArea();
-        for (String filename: staging_area.getStagedFiles()){
-            newCommit.renewTrackRec(filename, staging_area.getStagedFileBlobID(filename));
+        Stage stagingArea = getStagingArea();
+        for (String filename: stagingArea.getStagedFiles()) {
+            newCommit.renewTrackRec(filename, stagingArea.getStagedFileBlobID(filename));
         }
         moveAllFiles(STAGED_FOR_ADD, BLOBS);
-        staging_area.clear();
+        stagingArea.clear();
         newCommit.setID();
         newCommit.save();
         writeContents(join(HEADS, readContentsAsString(HEAD)), newCommit.getID());
@@ -110,10 +110,10 @@ public class Repository {
 
     public static void rm(String filename) {
         Commit currentCommit = getCurrentCommit();
-        Stage staging_area = getStagingArea();
+        Stage stagingArea = getStagingArea();
         String trackedFileBlobID = currentCommit.getTrackedFileBlobID(filename);
-        String stagedFileBlobID = staging_area.getStagedFileBlobID(filename);
-        if (trackedFileBlobID == null && stagedFileBlobID == null){
+        String stagedFileBlobID = stagingArea.getStagedFileBlobID(filename);
+        if (trackedFileBlobID == null && stagedFileBlobID == null) {
             exit("No reason to remove the file.");
         }
         if (trackedFileBlobID != null) {
@@ -125,20 +125,20 @@ public class Repository {
             }
         }
         if (stagedFileBlobID != null) {
-            staging_area.deleteRec(filename);
+            stagingArea.deleteRec(filename);
             join(STAGED_FOR_ADD, stagedFileBlobID).delete();
         }
-        staging_area.save();
+        stagingArea.save();
     }
 
     private static void printCommit(Commit currentCommit) {
         System.out.println("===");
         System.out.println("commit " + currentCommit.getID());
-        if (! currentCommit.getParentID(1).equals("")){
-            System.out.println("Merge: " + currentCommit.getParentID(0).substring(0,7) + " " + currentCommit.getParentID(1).substring(0,7));
+        if (!currentCommit.getParentID(1).equals("")) {
+            System.out.println("Merge: " + currentCommit.getParentID(0).substring(0, 7) + " " + currentCommit.getParentID(1).substring(0, 7));
             System.out.println("Date: " + currentCommit.timestampInString());
             System.out.println("Merged development into master.");
-        } else{
+        } else {
             System.out.println("Date: " + currentCommit.timestampInString());
             System.out.println(currentCommit.getMessage());
         }
@@ -149,15 +149,15 @@ public class Repository {
         Commit currentCommit = getCurrentCommit();
         while (true) {
             printCommit(currentCommit);
-            if (currentCommit.getParentID(0).isEmpty()){
+            if (currentCommit.getParentID(0).isEmpty()) {
                 break;
             }
             currentCommit = readObject(join(COMMITS, currentCommit.getParentID(0)), Commit.class);
         }
     }
 
-    public static void global_log() {
-        for (File file: COMMITS.listFiles()){
+    public static void globalLog() {
+        for (File file: COMMITS.listFiles()) {
             Commit currentCommit = readObject(file, Commit.class);
             printCommit(currentCommit);
         }
@@ -165,16 +165,16 @@ public class Repository {
 
     public static void find(String searchMessage) {
         boolean found = false;
-        for (File file: COMMITS.listFiles()){
+        for (File file: COMMITS.listFiles()) {
             Commit currentCommit = readObject(file, Commit.class);
-            if (currentCommit.getMessage().equals(searchMessage)){
+            if (currentCommit.getMessage().equals(searchMessage)) {
                 System.out.println(currentCommit.getID());
-                if (! found) {
+                if (!found) {
                     found = true;
                 }
             }
         }
-        if (! found) {
+        if (!found) {
             System.out.println("Found no commit with that message.");
         }
     }
@@ -183,8 +183,8 @@ public class Repository {
         ArrayList<String> info = new ArrayList<>();
         System.out.println("=== Branches ===");
         String currentBranch = readContentsAsString(HEAD);
-        for (String branch: plainFilenamesIn(HEADS)){
-            if (currentBranch.equals(branch)){
+        for (String branch: plainFilenamesIn(HEADS)) {
+            if (currentBranch.equals(branch)) {
                 branch = "*" + branch;
             }
             info.add(branch);
@@ -198,7 +198,7 @@ public class Repository {
 
         System.out.println("=== Staged Files ===");
         for (File blobFile : STAGED_FOR_ADD.listFiles()) {
-             info.add(readObject(blobFile, Blob.class).getFilename());
+            info.add(readObject(blobFile, Blob.class).getFilename());
         }
         Collections.sort(info);
         for (String name: info) {
@@ -224,12 +224,12 @@ public class Repository {
         System.out.println();
     }
 
-    public static void checkout(String[] args){
-        if (args.length == 3 && args[1].equals("--")){
+    public static void checkout(String[] args) {
+        if (args.length == 3 && args[1].equals("--")) {
             Commit targetCommit = findCommit(args[0]);
             if (targetCommit != null){
                 String targetBlobID = targetCommit.getTrackedFileBlobID(args[2]);
-                if (targetBlobID != null){
+                if (targetBlobID != null) {
                     Blob targetBlob = readObject(join(BLOBS, targetBlobID), Blob.class);
                     writeContents(join(CWD, args[2]), targetBlob.getContents());
                     return;
@@ -240,9 +240,9 @@ public class Repository {
         }
 
         Commit currentCommit = getCurrentCommit();
-        if (args.length == 2 && args[0].equals("--")){
+        if (args.length == 2 && args[0].equals("--")) {
             String oldVersionBlobID = currentCommit.getTrackedFileBlobID(args[1]);
-            if (oldVersionBlobID != null){
+            if (oldVersionBlobID != null) {
                 Blob oldBlob = readObject(join(BLOBS, oldVersionBlobID), Blob.class);
                 writeContents(join(CWD, args[1]), oldBlob.getContents());
                 return;
@@ -251,34 +251,34 @@ public class Repository {
             }
         }
 
-        if (args.length == 1){
+        if (args.length == 1) {
             if (join(HEADS, args[0]).exists()){
-                if (args[0].equals(readContentsAsString(HEAD))){
+                if (args[0].equals(readContentsAsString(HEAD))) {
                     exit("No need to checkout the current branch");
                 } else {
                     String targetCommitID = readContentsAsString(join(HEADS, args[0]));
                     Commit targetCommit = readObject(join(COMMITS, targetCommitID), Commit.class);
                     Set<String> trackedInCurrentBranch = currentCommit.getTrackedFiles().keySet();
                     Set<String> trackedInTargetBranch = targetCommit.getTrackedFiles().keySet();
-                    for (String filename: plainFilenamesIn(CWD)){
-                        if (! trackedInCurrentBranch.contains(filename) && trackedInTargetBranch.contains(filename)){
+                    for (String filename: plainFilenamesIn(CWD)) {
+                        if (!trackedInCurrentBranch.contains(filename) && trackedInTargetBranch.contains(filename)){
                             exit("There is an untracked file in the way; delete it, or add and commit it first.");
                         }
                     }
-                    for (String filename: trackedInTargetBranch){
+                    for (String filename: trackedInTargetBranch) {
                         String newBlobID = targetCommit.getTrackedFileBlobID(filename);
                         Blob newBlob = readObject(join(BLOBS, newBlobID), Blob.class);
-                        if (! newBlobID.equals(currentCommit.getTrackedFileBlobID(filename))){
+                        if (!newBlobID.equals(currentCommit.getTrackedFileBlobID(filename))) {
                             File newFile = join(CWD, filename);
                             writeContents(newFile, newBlob.getContents());
                         }
                     }
                     trackedInCurrentBranch.removeAll(trackedInTargetBranch);
-                    for (String filename: trackedInCurrentBranch){
+                    for (String filename: trackedInCurrentBranch) {
                         restrictedDelete(join(CWD, filename));
                     }
-                    Stage staging_area = getStagingArea();
-                    staging_area.clear();
+                    Stage stagingArea = getStagingArea();
+                    stagingArea.clear();
                     writeContents(HEAD, args[0]);
                     return;
                 }
@@ -289,25 +289,25 @@ public class Repository {
         exit("Incorrect operands");
     }
 
-    public static void branch(String branchName){
+    public static void branch(String branchName) {
         File newBranch = join(HEADS, branchName);
         if (newBranch.exists()){
             exit("A branch with that name already exists.");
         }
-        try{
+        try {
             newBranch.createNewFile();
-        } catch (IOException e){
+        } catch (IOException e) {
             throw error("IOException: Cannot create file or directory");
         }
         String currentCommitID = getCurrentCommit().getID();
         writeContents(newBranch, currentCommitID);
     }
 
-    public static void rm_branch(String branchName){
-        if (! join(HEADS, branchName).exists()){
+    public static void rm_branch(String branchName) {
+        if (!join(HEADS, branchName).exists()) {
             exit("A branch with that name does not exists.");
         }
-        if (branchName.equals(readContentsAsString(HEAD))){
+        if (branchName.equals(readContentsAsString(HEAD))) {
             exit("Cannot remove the current branch.");
         }
         join(HEADS, branchName).delete();

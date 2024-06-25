@@ -42,7 +42,7 @@ public class Main {
                 break;
             case "global-log":
                 inGitletDir();
-                global_log();
+                globalLog();
                 break;
             case "find":
                 inGitletDir();

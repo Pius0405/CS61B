@@ -10,36 +10,36 @@ import static gitlet.Repository.*;
 public class Stage implements Serializable {
     private HashMap<String, String> stagedFiles;
 
-    public Stage(){
+    public Stage() {
         stagedFiles = new HashMap<>();
     }
 
-    public void addRec(String filename, String blobID){
+    public void addRec(String filename, String blobID) {
         stagedFiles.put(filename, blobID);
     }
 
-    public void deleteRec(String filename){
+    public void deleteRec(String filename) {
         stagedFiles.remove(filename);
     }
 
-    public static Stage getStagingArea(){
+    public static Stage getStagingArea() {
         return readObject(STAGING, Stage.class);
     }
 
-    public Set<String> getStagedFiles(){
+    public Set<String> getStagedFiles() {
         return stagedFiles.keySet();
     }
 
-    public String getStagedFileBlobID(String filename){
+    public String getStagedFileBlobID(String filename) {
         return stagedFiles.get(filename);
     }
 
-    public void clear(){
+    public void clear() {
         stagedFiles.clear();
         save();
     }
 
-    public void save(){
+    public void save() {
         writeObject(STAGING, this);
     }
 }

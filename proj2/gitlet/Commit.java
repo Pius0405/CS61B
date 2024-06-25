@@ -17,16 +17,16 @@ import static gitlet.Utils.*;
  *
  *  @author Pius
  */
-public class Commit implements Serializable{
+public class Commit implements Serializable {
 
     private String ID;
     private final String message;
     // Gitlet allows at most two parents for each commit
     private final String[] parents;
-    private HashMap<String,String> trackedFiles;
+    private HashMap<String, String> trackedFiles;
     private final Date timestamp;
 
-    public Commit(Date currentTime, String[] parents, String message, HashMap<String, String> trackedFiles) {
+    public Commit (Date currentTime, String[] parents, String message, HashMap<String, String> trackedFiles) {
         this.message = message;
         this.parents = parents;
         this.timestamp = currentTime;
@@ -67,11 +67,11 @@ public class Commit implements Serializable{
     }
 
     public void save() {
-        try{
+        try {
             File f = join(COMMITS, ID);
             f.createNewFile();
             writeObject(f, this);
-        } catch(IOException e) {
+        } catch (IOException e) {
             throw error("IOException: Cannot create file or directory");
         }
     }
@@ -86,14 +86,14 @@ public class Commit implements Serializable{
         return trackedFiles.get(filename);
     }
 
-    public static Commit findCommit(String searchID){
-        if (searchID.length() == UID_LENGTH){
-            if (plainFilenamesIn(COMMITS).contains(searchID)){
+    public static Commit findCommit(String searchID) {
+        if (searchID.length() == UID_LENGTH) {
+            if (plainFilenamesIn(COMMITS).contains(searchID)) {
                 return readObject(join(COMMITS, searchID), Commit.class);
             }
         } else {
-            for (String commitID: plainFilenamesIn(COMMITS)){
-                if (commitID.substring(0, searchID.length()).equals(searchID)){
+            for (String commitID: plainFilenamesIn(COMMITS)) {
+                if (commitID.substring(0, searchID.length()).equals(searchID)) {
                     return readObject(join(COMMITS, commitID), Commit.class);
                 }
             }
