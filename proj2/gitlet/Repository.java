@@ -218,16 +218,20 @@ public class Repository {
         System.out.println();
     }
 
+    private static void renewCWDFile(Commit commit, String filename) {
+        String BlobID = commit.getTrackedFileBlobID(filename);
+        if (BlobID != null) {
+            Blob targetBlob = readObject(join(BLOBS, BlobID), Blob.class);
+            writeContents(join(CWD, filename), targetBlob.getContents());
+        } else {
+            exit("File does not exists in that commit.");
+        }
+    }
+
     public static void checkoutCommit(String commitID, String filename) {
         Commit targetCommit = findCommit(commitID);
         if (targetCommit != null){
-            String targetBlobID = targetCommit.getTrackedFileBlobID(filename);
-            if (targetBlobID != null) {
-                Blob targetBlob = readObject(join(BLOBS, targetBlobID), Blob.class);
-                writeContents(join(CWD, filename), targetBlob.getContents());
-            } else {
-                exit("File does not exists in that commit.");
-            }
+            renewCWDFile(targetCommit, filename);
         } else {
             exit("No commit with that id exists.");
         }
@@ -235,13 +239,7 @@ public class Repository {
 
     public static void checkoutFile(String filename) {
         Commit currentCommit = getCurrentCommit();
-        String oldVersionBlobID = currentCommit.getTrackedFileBlobID(filename);
-        if (oldVersionBlobID != null) {
-            Blob oldBlob = readObject(join(BLOBS, oldVersionBlobID), Blob.class);
-            writeContents(join(CWD, filename), oldBlob.getContents());
-        } else {
-            exit("File does not exists in that commit.");
-        }
+        renewCWDFile(currentCommit, filename);
     }
 
     public static void checkoutBranch(String branchName){
@@ -267,16 +265,20 @@ public class Repository {
                         writeContents(newFile, newBlob.getContents());
                     }
                 }
-                trackedInCurrentBranch.removeAll(trackedInTargetBranch);
-                for (String filename: trackedInCurrentBranch) {
-                    restrictedDelete(join(CWD, filename));
-                }
+                removeUntrackedFiles(trackedInCurrentBranch, trackedInTargetBranch);
                 Stage stagingArea = getStagingArea();
                 stagingArea.clear();
                 writeContents(HEAD, branchName);
             }
         } else {
             exit("No such branch exists.");
+        }
+    }
+
+    private static void removeUntrackedFiles(Set<String> s1, Set<String> s2) {
+        s1.removeAll(s2);
+        for (String filename : s1) {
+            restrictedDelete(join(CWD, filename));
         }
     }
 

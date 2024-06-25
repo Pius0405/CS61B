@@ -75,6 +75,7 @@ public class Main {
             case "reset":
                 inGitletDir();
                 reset(args[1]);
+                break;
             default:
                 exit("No command with that name exists.");
         }
