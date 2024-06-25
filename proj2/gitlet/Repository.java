@@ -179,6 +179,7 @@ public class Repository {
         }
     }
 
+    //Helper method for status
     private static void statusPrinter(String topic, ArrayList<String> info) {
         Collections.sort(info);
         System.out.println("=== " + topic + " ===");
@@ -325,6 +326,7 @@ public class Repository {
             removeUntrackedFiles(currentCommit, targetCommit);
             String currentBranch = readContentsAsString(HEAD);
             writeContents(join(HEADS, currentBranch), targetCommit.getID());
+            Stage.clearStagingArea();
         } else {
             exit("No commit with that id exists.");
         }

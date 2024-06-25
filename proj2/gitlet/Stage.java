@@ -39,6 +39,12 @@ public class Stage implements Serializable {
         save();
     }
 
+    public static void clearStagingArea(){
+        Stage stagingArea = readObject(STAGING, Stage.class);
+        stagingArea.stagedFiles.clear();
+        stagingArea.save();
+    }
+
     public void save() {
         writeObject(STAGING, this);
     }
