@@ -64,6 +64,9 @@ public class Main {
                 inGitletDir();
                 rm_branch(args[1]);
                 break;
+            case "reset":
+                inGitletDir();
+                reset(args[1]);
             default:
                 exit("No command with that name exists.");
         }

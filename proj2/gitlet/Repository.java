@@ -294,11 +294,6 @@ public class Repository {
         if (newBranch.exists()){
             exit("A branch with that name already exists.");
         }
-        try {
-            newBranch.createNewFile();
-        } catch (IOException e) {
-            throw error("IOException: Cannot create file or directory");
-        }
         String currentCommitID = getCurrentCommit().getID();
         writeContents(newBranch, currentCommitID);
     }
@@ -313,6 +308,9 @@ public class Repository {
         join(HEADS, branchName).delete();
     }
 
+    public static void reset(String commitID){
+        //pass
+    }
 
     //Utility methods
 
