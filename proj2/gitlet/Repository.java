@@ -102,7 +102,7 @@ public class Repository {
             newCommit.renewTrackRec(filename, stagingArea.getStagedFileBlobID(filename));
         }
         moveAllFiles(STAGED_FOR_ADD, BLOBS);
-        stagingArea.clear();
+        clearStagingArea();
         newCommit.setID();
         newCommit.save();
         writeContents(join(HEADS, readContentsAsString(HEAD)), newCommit.getID());
@@ -289,8 +289,7 @@ public class Repository {
                 catchUntrackedFiles(currentCommit, targetCommit);
                 renewCWDFile(currentCommit, targetCommit);
                 removeUntrackedFiles(currentCommit, targetCommit);
-                Stage stagingArea = getStagingArea();
-                stagingArea.clear();
+                clearStagingArea();
                 writeContents(HEAD, branchName);
             }
         } else {
@@ -326,10 +325,14 @@ public class Repository {
             removeUntrackedFiles(currentCommit, targetCommit);
             String currentBranch = readContentsAsString(HEAD);
             writeContents(join(HEADS, currentBranch), targetCommit.getID());
-            Stage.clearStagingArea();
+            clearStagingArea();
         } else {
             exit("No commit with that id exists.");
         }
+    }
+
+    public static void merge(String branchName){
+        //pass
     }
 
     //Utility methods
