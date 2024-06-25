@@ -304,6 +304,17 @@ public class Repository {
         writeContents(newBranch, currentCommitID);
     }
 
+    public static void rm_branch(String branchName){
+        if (! join(HEADS, branchName).exists()){
+            exit("A branch with that name does not exists.");
+        }
+        if (branchName.equals(readContentsAsString(HEAD))){
+            exit("Cannot remove the current branch.");
+        }
+        join(HEADS, branchName).delete();
+    }
+
+
     //Utility methods
 
     public static void exit(String message) {

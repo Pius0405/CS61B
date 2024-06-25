@@ -60,6 +60,10 @@ public class Main {
                 inGitletDir();
                 branch(args[1]);
                 break;
+            case "rm-branch":
+                inGitletDir();
+                rm_branch(args[1]);
+                break;
             default:
                 exit("No command with that name exists.");
         }
