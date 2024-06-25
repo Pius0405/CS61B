@@ -88,11 +88,14 @@ public class Commit implements Serializable{
 
     public static Commit findCommit(String searchID){
         if (searchID.length() == UID_LENGTH){
-            return readObject(join(COMMITS, searchID), Commit.class);
-        }
-        for (String commitID: plainFilenamesIn(COMMITS)){
-            if (commitID.substring(0, searchID.length()).equals(searchID)){
-                return readObject(join(COMMITS, commitID), Commit.class);
+            if (plainFilenamesIn(COMMITS).contains(searchID)){
+                return readObject(join(COMMITS, searchID), Commit.class);
+            }
+        } else {
+            for (String commitID: plainFilenamesIn(COMMITS)){
+                if (commitID.substring(0, searchID.length()).equals(searchID)){
+                    return readObject(join(COMMITS, commitID), Commit.class);
+                }
             }
         }
         return null;
