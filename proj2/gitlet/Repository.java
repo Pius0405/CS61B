@@ -230,8 +230,8 @@ public class Repository {
 
     public static void checkout(String[] args){
         if (args.length == 3 && args[1].equals("--")){
-            if (join(COMMITS, args[0]).exists()){
-                Commit targetCommit = findCommit(args[0]);
+            Commit targetCommit = findCommit(args[0]);
+            if (targetCommit != null){
                 String targetBlobID = targetCommit.getTrackedFileBlobID(args[2]);
                 if (targetBlobID != null){
                     Blob targetBlob = readObject(join(BLOBS, targetBlobID), Blob.class);
