@@ -121,11 +121,7 @@ public class Repository {
                 File destination = join(STAGED_FOR_REMOVAL, filename);
                 join(CWD, filename).renameTo(destination);
             } else {
-                try {
-                    join(STAGED_FOR_REMOVAL, filename).createNewFile();
-                } catch (IOException e) {
-                    throw error("IOException: Cannot create file or directory");
-                }
+                writeContents(join(STAGED_FOR_REMOVAL, filename), "");
             }
         }
         if (stagedFileBlobID != null) {
