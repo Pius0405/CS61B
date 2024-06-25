@@ -54,7 +54,15 @@ public class Main {
                 break;
             case "checkout":
                 inGitletDir();
-                checkout(Arrays.copyOfRange(args, 1, args.length));
+                if (args.length == 4 && args[2].equals("--")) {
+                    checkoutCommit(args[1], args[3]);
+                } else if (args.length == 3 && args[1].equals("--")) {
+                    checkoutFile(args[2]);
+                } else if (args.length == 2) {
+                    checkoutBranch(args[1]);
+                } else {
+                    exit("Incorrect operands");
+                }
                 break;
             case "branch":
                 inGitletDir();

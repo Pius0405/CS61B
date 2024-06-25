@@ -218,69 +218,66 @@ public class Repository {
         System.out.println();
     }
 
-    public static void checkout(String[] args) {
-        if (args.length == 3 && args[1].equals("--")) {
-            Commit targetCommit = findCommit(args[0]);
-            if (targetCommit != null){
-                String targetBlobID = targetCommit.getTrackedFileBlobID(args[2]);
-                if (targetBlobID != null) {
-                    Blob targetBlob = readObject(join(BLOBS, targetBlobID), Blob.class);
-                    writeContents(join(CWD, args[2]), targetBlob.getContents());
-                    return;
-                }
+    public static void checkoutCommit(String commitID, String filename) {
+        Commit targetCommit = findCommit(commitID);
+        if (targetCommit != null){
+            String targetBlobID = targetCommit.getTrackedFileBlobID(filename);
+            if (targetBlobID != null) {
+                Blob targetBlob = readObject(join(BLOBS, targetBlobID), Blob.class);
+                writeContents(join(CWD, filename), targetBlob.getContents());
+            } else {
                 exit("File does not exists in that commit.");
             }
+        } else {
             exit("No commit with that id exists.");
         }
+    }
 
+    public static void checkoutFile(String filename) {
         Commit currentCommit = getCurrentCommit();
-        if (args.length == 2 && args[0].equals("--")) {
-            String oldVersionBlobID = currentCommit.getTrackedFileBlobID(args[1]);
-            if (oldVersionBlobID != null) {
-                Blob oldBlob = readObject(join(BLOBS, oldVersionBlobID), Blob.class);
-                writeContents(join(CWD, args[1]), oldBlob.getContents());
-                return;
-            } else {
-                exit("File does not exists in that commit.");
-            }
+        String oldVersionBlobID = currentCommit.getTrackedFileBlobID(filename);
+        if (oldVersionBlobID != null) {
+            Blob oldBlob = readObject(join(BLOBS, oldVersionBlobID), Blob.class);
+            writeContents(join(CWD, filename), oldBlob.getContents());
+        } else {
+            exit("File does not exists in that commit.");
         }
+    }
 
-        if (args.length == 1) {
-            if (join(HEADS, args[0]).exists()){
-                if (args[0].equals(readContentsAsString(HEAD))) {
-                    exit("No need to checkout the current branch");
-                } else {
-                    String targetCommitID = readContentsAsString(join(HEADS, args[0]));
-                    Commit targetCommit = readObject(join(COMMITS, targetCommitID), Commit.class);
-                    Set<String> trackedInCurrentBranch = currentCommit.getTrackedFiles().keySet();
-                    Set<String> trackedInTargetBranch = targetCommit.getTrackedFiles().keySet();
-                    for (String filename: plainFilenamesIn(CWD)) {
-                        if (!trackedInCurrentBranch.contains(filename) && trackedInTargetBranch.contains(filename)){
-                            exit("There is an untracked file in the way; delete it, or add and commit it first.");
-                        }
-                    }
-                    for (String filename: trackedInTargetBranch) {
-                        String newBlobID = targetCommit.getTrackedFileBlobID(filename);
-                        Blob newBlob = readObject(join(BLOBS, newBlobID), Blob.class);
-                        if (!newBlobID.equals(currentCommit.getTrackedFileBlobID(filename))) {
-                            File newFile = join(CWD, filename);
-                            writeContents(newFile, newBlob.getContents());
-                        }
-                    }
-                    trackedInCurrentBranch.removeAll(trackedInTargetBranch);
-                    for (String filename: trackedInCurrentBranch) {
-                        restrictedDelete(join(CWD, filename));
-                    }
-                    Stage stagingArea = getStagingArea();
-                    stagingArea.clear();
-                    writeContents(HEAD, args[0]);
-                    return;
-                }
+    public static void checkoutBranch(String branchName){
+        if (join(HEADS, branchName).exists()){
+            if (branchName.equals(readContentsAsString(HEAD))) {
+                exit("No need to checkout the current branch");
             } else {
-                exit("No such branch exists.");
+                Commit currentCommit = getCurrentCommit();
+                String targetCommitID = readContentsAsString(join(HEADS, branchName));
+                Commit targetCommit = readObject(join(COMMITS, targetCommitID), Commit.class);
+                Set<String> trackedInCurrentBranch = currentCommit.getTrackedFiles().keySet();
+                Set<String> trackedInTargetBranch = targetCommit.getTrackedFiles().keySet();
+                for (String filename: plainFilenamesIn(CWD)) {
+                    if (!trackedInCurrentBranch.contains(filename) && trackedInTargetBranch.contains(filename)){
+                        exit("There is an untracked file in the way; delete it, or add and commit it first.");
+                    }
+                }
+                for (String filename: trackedInTargetBranch) {
+                    String newBlobID = targetCommit.getTrackedFileBlobID(filename);
+                    Blob newBlob = readObject(join(BLOBS, newBlobID), Blob.class);
+                    if (!newBlobID.equals(currentCommit.getTrackedFileBlobID(filename))) {
+                        File newFile = join(CWD, filename);
+                        writeContents(newFile, newBlob.getContents());
+                    }
+                }
+                trackedInCurrentBranch.removeAll(trackedInTargetBranch);
+                for (String filename: trackedInCurrentBranch) {
+                    restrictedDelete(join(CWD, filename));
+                }
+                Stage stagingArea = getStagingArea();
+                stagingArea.clear();
+                writeContents(HEAD, branchName);
             }
+        } else {
+            exit("No such branch exists.");
         }
-        exit("Incorrect operands");
     }
 
     public static void branch(String branchName) {
