@@ -213,10 +213,52 @@ public class Repository {
         statusPrinter("Removed Files", info);
         info.clear();
 
-        System.out.println("=== Modifications Not Staged For Commit ===");
-        System.out.println();
-        System.out.println("=== Untracked Files ===");
-        System.out.println();
+        Commit currentCommit = getCurrentCommit();
+        Stage stagingArea = getStagingArea();
+        for (String filename : currentCommit.getTrackedFiles().keySet()){
+            File CWDFile = join(CWD,filename);
+            if (CWDFile.exists()){
+                Blob curVersion = new Blob(filename, readContentsAsString(CWDFile));
+                String trackedVersionID = currentCommit.getTrackedFileBlobID(filename);
+                if (! curVersion.getID().equals(trackedVersionID)){
+                    if (stagingArea.getStagedFileBlobID(filename) == null){
+                        info.add(filename);
+                    }
+                }
+            } else {
+                if (! join(STAGED_FOR_REMOVAL, filename).exists()) {
+                    info.add(filename);
+                }
+            }
+        }
+
+        for (String filename : stagingArea.getStagedFiles()){
+            File CWDFile = join(CWD,filename);
+            if (CWDFile.exists()){
+                Blob curVersion = new Blob(filename, readContentsAsString(CWDFile));
+                if (! stagingArea.getStagedFileBlobID(filename).equals(curVersion.getID())) {
+                    info.add(filename);
+                }
+            } else {
+                info.add(filename);
+            }
+        }
+
+        statusPrinter("Modifications Not Staged For Commit", info);
+        info.clear();
+
+        for (String filename : plainFilenamesIn(CWD)){
+            if (currentCommit.getTrackedFileBlobID(filename) == null){
+                if (stagingArea.getStagedFileBlobID(filename) == null){
+                    info.add(filename);
+                }
+            }  else {
+                if (join(STAGED_FOR_REMOVAL, filename).exists()) {
+                    info.add(filename);
+                }
+            }
+        }
+        statusPrinter("Untracked Files", info);
     }
 
     //Helper method for checkout
