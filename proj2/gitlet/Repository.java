@@ -239,8 +239,8 @@ public class Repository {
             exit("No commit with that id exists.");
         }
 
+        Commit currentCommit = getCurrentCommit();
         if (args.length == 2 && args[0].equals("--")){
-            Commit currentCommit = getCurrentCommit();
             String oldVersionBlobID = currentCommit.getTrackedFileBlobID(args[1]);
             if (oldVersionBlobID != null){
                 Blob oldBlob = readObject(join(BLOBS, oldVersionBlobID), Blob.class);
@@ -258,7 +258,6 @@ public class Repository {
                 } else {
                     String targetCommitID = readContentsAsString(join(HEADS, args[0]));
                     Commit targetCommit = readObject(join(COMMITS, targetCommitID), Commit.class);
-                    Commit currentCommit = getCurrentCommit();
                     Set<String> trackedInCurrentBranch = currentCommit.getTrackedFiles().keySet();
                     Set<String> trackedInTargetBranch = targetCommit.getTrackedFiles().keySet();
                     for (String filename: plainFilenamesIn(CWD)){
