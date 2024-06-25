@@ -222,12 +222,12 @@ public class Repository {
                 String trackedVersionID = currentCommit.getTrackedFileBlobID(filename);
                 if (! curVersion.getID().equals(trackedVersionID)){
                     if (stagingArea.getStagedFileBlobID(filename) == null){
-                        info.add(filename);
+                        info.add(filename + " (modified)");
                     }
                 }
             } else {
                 if (! join(STAGED_FOR_REMOVAL, filename).exists()) {
-                    info.add(filename);
+                    info.add(filename + " (deleted)");
                 }
             }
         }
@@ -237,10 +237,10 @@ public class Repository {
             if (CWDFile.exists()){
                 Blob curVersion = new Blob(filename, readContentsAsString(CWDFile));
                 if (! stagingArea.getStagedFileBlobID(filename).equals(curVersion.getID())) {
-                    info.add(filename);
+                    info.add(filename + " (modified)");
                 }
             } else {
-                info.add(filename);
+                info.add(filename + " (deleted)");
             }
         }
 
