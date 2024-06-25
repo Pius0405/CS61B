@@ -218,7 +218,7 @@ public class Repository {
         for (String filename : currentCommit.getTrackedFiles().keySet()){
             File CWDFile = join(CWD,filename);
             if (CWDFile.exists()){
-                Blob curVersion = new Blob(filename, readContentsAsString(CWDFile));
+                Blob curVersion = new Blob(readContentsAsString(CWDFile), filename);
                 String trackedVersionID = currentCommit.getTrackedFileBlobID(filename);
                 if (! curVersion.getID().equals(trackedVersionID)){
                     if (stagingArea.getStagedFileBlobID(filename) == null){
@@ -235,7 +235,7 @@ public class Repository {
         for (String filename : stagingArea.getStagedFiles()){
             File CWDFile = join(CWD,filename);
             if (CWDFile.exists()){
-                Blob curVersion = new Blob(filename, readContentsAsString(CWDFile));
+                Blob curVersion = new Blob(readContentsAsString(CWDFile), filename);
                 if (! stagingArea.getStagedFileBlobID(filename).equals(curVersion.getID())) {
                     info.add(filename + " (modified)");
                 }
