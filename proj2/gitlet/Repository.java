@@ -179,9 +179,17 @@ public class Repository {
         }
     }
 
+    private static void statusPrinter(String topic, ArrayList<String> info) {
+        Collections.sort(info);
+        System.out.println("=== " + topic + " ===");
+        for (String name: info) {
+            System.out.println(name);
+        }
+        System.out.println();
+    }
+
     public static void status() {
         ArrayList<String> info = new ArrayList<>();
-        System.out.println("=== Branches ===");
         String currentBranch = readContentsAsString(HEAD);
         for (String branch: plainFilenamesIn(HEADS)) {
             if (currentBranch.equals(branch)) {
@@ -189,33 +197,19 @@ public class Repository {
             }
             info.add(branch);
         }
-        Collections.sort(info);
-        for (String name: info) {
-            System.out.println(name);
-        }
-        System.out.println();
+        statusPrinter("Branches", info);
         info.clear();
 
-        System.out.println("=== Staged Files ===");
         for (File blobFile : STAGED_FOR_ADD.listFiles()) {
             info.add(readObject(blobFile, Blob.class).getFilename());
         }
-        Collections.sort(info);
-        for (String name: info) {
-            System.out.println(name);
-        }
-        System.out.println();
+        statusPrinter("Staged Files", info);
         info.clear();
 
-        System.out.println("=== Removed Files ===");
         for (String filename : plainFilenamesIn(STAGED_FOR_REMOVAL)) {
             info.add(filename);
         }
-        Collections.sort(info);
-        for (String name: info) {
-            System.out.println(name);
-        }
-        System.out.println();
+        statusPrinter("Removed Files", info);
         info.clear();
 
         System.out.println("=== Modifications Not Staged For Commit ===");
