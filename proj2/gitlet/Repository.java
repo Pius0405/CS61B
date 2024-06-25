@@ -229,6 +229,19 @@ public class Repository {
         }
     }
 
+    //Override renewCWDFile
+    private static void renewCWDFile(Commit currentCommit, Commit targetCommit){
+        Set<String> trackedInTargetBranch = targetCommit.getTrackedFiles().keySet();
+        for (String filename: trackedInTargetBranch) {
+            String newBlobID = targetCommit.getTrackedFileBlobID(filename);
+            Blob newBlob = readObject(join(BLOBS, newBlobID), Blob.class);
+            if (!newBlobID.equals(currentCommit.getTrackedFileBlobID(filename))) {
+                File newFile = join(CWD, filename);
+                writeContents(newFile, newBlob.getContents());
+            }
+        }
+    }
+
     //Helper method for checkout
     private static void removeUntrackedFiles(Commit currentCommit, Commit targetCommit) {
         Set<String> trackedInCurrentBranch = currentCommit.getTrackedFiles().keySet();
@@ -236,6 +249,17 @@ public class Repository {
         trackedInCurrentBranch.removeAll(trackedInTargetBranch);
         for (String filename : trackedInCurrentBranch) {
             restrictedDelete(join(CWD, filename));
+        }
+    }
+
+    //Helper method for checkout
+    private static void catchUntrackedFiles(Commit currentCommit, Commit targetCommit){
+        Set<String> trackedInCurrentBranch = currentCommit.getTrackedFiles().keySet();
+        Set<String> trackedInTargetBranch = targetCommit.getTrackedFiles().keySet();
+        for (String filename: plainFilenamesIn(CWD)) {
+            if (!trackedInCurrentBranch.contains(filename) && trackedInTargetBranch.contains(filename)){
+                exit("There is an untracked file in the way; delete it, or add and commit it first.");
+            }
         }
     }
 
@@ -252,29 +276,6 @@ public class Repository {
         Commit currentCommit = getCurrentCommit();
         renewCWDFile(currentCommit, filename);
     }
-
-    private static void catchUntrackedFiles(Commit currentCommit, Commit targetCommit){
-        Set<String> trackedInCurrentBranch = currentCommit.getTrackedFiles().keySet();
-        Set<String> trackedInTargetBranch = targetCommit.getTrackedFiles().keySet();
-        for (String filename: plainFilenamesIn(CWD)) {
-            if (!trackedInCurrentBranch.contains(filename) && trackedInTargetBranch.contains(filename)){
-                exit("There is an untracked file in the way; delete it, or add and commit it first.");
-            }
-        }
-    }
-
-    private static void renewCWDFile(Commit currentCommit, Commit targetCommit){
-        Set<String> trackedInTargetBranch = targetCommit.getTrackedFiles().keySet();
-        for (String filename: trackedInTargetBranch) {
-            String newBlobID = targetCommit.getTrackedFileBlobID(filename);
-            Blob newBlob = readObject(join(BLOBS, newBlobID), Blob.class);
-            if (!newBlobID.equals(currentCommit.getTrackedFileBlobID(filename))) {
-                File newFile = join(CWD, filename);
-                writeContents(newFile, newBlob.getContents());
-            }
-        }
-    }
-
 
     public static void checkoutBranch(String branchName){
         if (join(HEADS, branchName).exists()){
@@ -317,7 +318,16 @@ public class Repository {
 
     public static void reset(String commitID){
         Commit targetCommit = findCommit(commitID);
-        //pass
+        if (targetCommit != null) {
+            Commit currentCommit = getCurrentCommit();
+            catchUntrackedFiles(currentCommit, targetCommit);
+            renewCWDFile(currentCommit, targetCommit);
+            removeUntrackedFiles(currentCommit, targetCommit);
+            String currentBranch = readContentsAsString(HEAD);
+            writeContents(join(HEADS, currentBranch), targetCommit.getID());
+        } else {
+            exit("No commit with that id exists.");
+        }
     }
 
     //Utility methods
