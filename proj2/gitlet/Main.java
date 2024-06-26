@@ -79,6 +79,7 @@ public class Main {
             case "merge":
                 inGitletDir();
                 merge(args[1]);
+                break;
             default:
                 exit("No command with that name exists.");
         }
