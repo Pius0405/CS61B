@@ -36,10 +36,10 @@ public class Stage implements Serializable {
 
     public static void clearStagingArea(){
         Stage stagingArea = readObject(STAGING, Stage.class);
-        for (String filename : plainFilenamesIn(STAGED_FOR_ADD)){
+        for (String filename : plainFilenamesIn(STAGED_FOR_ADD)) {
             join(STAGED_FOR_ADD, filename).delete();
         }
-        for (String filename : plainFilenamesIn(STAGED_FOR_REMOVAL)){
+        for (String filename : plainFilenamesIn(STAGED_FOR_REMOVAL)) {
             join(STAGED_FOR_REMOVAL, filename).delete();
         }
         stagingArea.stagedFiles.clear();

@@ -2,12 +2,7 @@ package gitlet;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Set;
+import java.util.*;
 import static gitlet.Utils.*;
 import static gitlet.Commit.*;
 import static gitlet.Stage.*;
@@ -262,6 +257,10 @@ public class Repository {
     }
 
     //Helper method for checkout
+    /***
+     * Takes as arguments a commit and a filename and change the corresponding file in the CWD
+     * to the version in the commit if exists.
+     */
     private static void renewCWDFile(Commit commit, String filename) {
         String BlobID = commit.getTrackedFileBlobID(filename);
         if (BlobID != null) {
@@ -273,6 +272,10 @@ public class Repository {
     }
 
     //Override renewCWDFile
+
+    /**
+     * Changes all files in CWD to version of files in the target commit
+     */
     private static void renewCWDFile(Commit currentCommit, Commit targetCommit){
         Set<String> trackedInTargetBranch = targetCommit.getTrackedFiles().keySet();
         for (String filename: trackedInTargetBranch) {
@@ -286,6 +289,11 @@ public class Repository {
     }
 
     //Helper method for checkout
+
+    /**
+     * remove all files from the CWD that are tracked in the current commit but not
+     * tracked in the target commit
+     */
     private static void removeUntrackedFiles(Commit currentCommit, Commit targetCommit) {
         Set<String> trackedInCurrentBranch = currentCommit.getTrackedFiles().keySet();
         Set<String> trackedInTargetBranch = targetCommit.getTrackedFiles().keySet();
@@ -296,6 +304,11 @@ public class Repository {
     }
 
     //Helper method for checkout
+
+    /**
+     * Check if there are any files in the CWD that are not tracked in the current commit
+     * but tracked by target commit
+     */
     private static void catchUntrackedFiles(Commit currentCommit, Commit targetCommit){
         Set<String> trackedInCurrentBranch = currentCommit.getTrackedFiles().keySet();
         Set<String> trackedInTargetBranch = targetCommit.getTrackedFiles().keySet();
@@ -373,8 +386,64 @@ public class Repository {
         }
     }
 
-    public static void merge(String branchName){
-        System.out.println("Hello world");
+    private static String getSplitPoint(Commit commit1, Commit commit2){
+        HashMap<String, Integer> branch1Ancestors = new HashMap<>();
+        Set<String> branch2Ancestors = new HashSet<>();
+        String nextParentID;
+        while (true) {
+            branch1Ancestors.put(commit1.getID(), 1);
+            nextParentID = commit1.getParentID(0);
+            if (nextParentID.equals("")) {
+                break;
+            }
+            commit1 = readObject(join(COMMITS, nextParentID), Commit.class);
+        }
+
+        while (true) {
+            branch2Ancestors.add(commit2.getID());
+            nextParentID = commit2.getParentID(0);
+            if (nextParentID.equals("")) {
+                break;
+            }
+            commit2 = readObject(join(COMMITS, nextParentID), Commit.class);
+        }
+
+        String latestCommonAncestor = "";
+        Double smallestDepth = Double.POSITIVE_INFINITY;
+        for (String commitID : branch1Ancestors.keySet()) {
+            if (branch2Ancestors.contains(commitID)) {
+                if (latestCommonAncestor.equals("") || branch1Ancestors.get(commitID) < smallestDepth) {
+                    latestCommonAncestor = commitID;
+                    smallestDepth = Double.valueOf(branch1Ancestors.get(commitID));
+                }
+            }
+        }
+        return latestCommonAncestor;
+    }
+
+    public static void merge(String targetBranch){
+        if (! join(HEADS, targetBranch).exists()){
+            exit("A branch with that name does not exists.");
+        }
+        if (STAGED_FOR_ADD.list().length != 0 || STAGED_FOR_REMOVAL.list().length != 0) {
+            exit("You have uncommitted changes.");
+        }
+        if (targetBranch.equals(readContentsAsString(HEAD))){
+            exit("Cannot merge a branch with itself.");
+        }
+        String currentBranch = readContentsAsString(HEAD);
+        String targetCommitID = readContentsAsString(join(HEADS, targetBranch));
+        Commit targetCommit = readObject(join(COMMITS, targetCommitID), Commit.class);
+        Commit currentCommit = getCurrentCommit();
+        String splitPointID = getSplitPoint(currentCommit, targetCommit);
+        catchUntrackedFiles(currentCommit, targetCommit);
+        if (splitPointID.equals(readContentsAsString(join(HEADS, targetBranch)))) {
+            exit("Given branch is an ancestor of the current branch.");
+        }
+        if (splitPointID.equals(readContentsAsString(join(HEADS, currentBranch)))) {
+            checkoutBranch(targetBranch);
+            exit("Current branch fast-forwarded.");
+        }
     }
 
     //Utility methods
