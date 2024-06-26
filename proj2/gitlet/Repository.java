@@ -374,7 +374,7 @@ public class Repository {
     }
 
     public static void merge(String branchName){
-        //pass
+        System.out.println("Hello world");
     }
 
     //Utility methods
