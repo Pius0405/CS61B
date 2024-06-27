@@ -418,8 +418,8 @@ public class Repository {
      * @return commitID of the latest common ancestor
      */
     private static Commit getSplitPoint(Commit commit1, Commit commit2) {
-        Set<String> branch1visited = new HashSet<>();
-        Set<String> branch2visited = new HashSet<>();
+        Set<Commit> branch1visited = new HashSet<>();
+        Set<Commit> branch2visited = new HashSet<>();
         Queue<Commit> branch1pending = new LinkedList<>();
         Queue<Commit> branch2pending = new LinkedList<>();
 
@@ -432,12 +432,14 @@ public class Repository {
                 return thisCommit;
             }
             insertQueue(branch1pending, thisCommit);
+            branch1visited.add(thisCommit);
 
             thisCommit = branch2pending.poll();
             if (branch1visited.contains(thisCommit)) {
                 return thisCommit;
             }
             insertQueue(branch2pending, thisCommit);
+            branch2visited.add(thisCommit);
         }
         return null;
     }
