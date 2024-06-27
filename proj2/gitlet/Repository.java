@@ -418,50 +418,21 @@ public class Repository {
      * @return commitID of the latest common ancestor
      */
     private static Commit getSplitPoint(Commit commit1, Commit commit2) {
-        Set<Commit> branch1visited = new HashSet<>();
-        Set<Commit> branch2visited = new HashSet<>();
-        Queue<Commit> branch1pending = new LinkedList<>();
-        Queue<Commit> branch2pending = new LinkedList<>();
-
-        branch1pending.add(commit1);
-        branch2pending.add(commit2);
-
-        while (!branch1pending.isEmpty() || !branch2pending.isEmpty()) {
-            if (!branch1pending.isEmpty()) {
-                Commit thisCommit = branch1pending.poll();
-                if (branch2visited.contains(thisCommit)) {
-                    return thisCommit;
-                }
-                branch1visited.add(thisCommit);
-                insertQueue(branch1pending, thisCommit);
+        HashMap<Commit, Integer> branch1visited = new HashMap<>();
+        Integer depth = 0;
+        while (true) {
+            branch1visited.put(commit1, depth);
+            if (commit1.getParentID(0).equals("")) {
+                break;
             }
-
-            if (!branch2pending.isEmpty()) {
-                Commit thisCommit = branch2pending.poll();
-                if (branch1visited.contains(thisCommit)) {
-                    return thisCommit;
-                }
-                branch2visited.add(thisCommit);
-                insertQueue(branch2pending, thisCommit);
+            commit1 = readObject(join(CWD, commit1.getParentID(0)), Commit.class);
+            depth += 1;
+        }
+        while (true) {
+            if (branch1visited.containsKey(commit2) || commit2.getParentID(0).equals("")) {
+                return commit2;
             }
-        }
-        return null;
-    }
-
-    private static void insertQueue(Queue<Commit> queue, Commit commit) {
-        if (commit == null) return;
-
-        String parentId1 = commit.getParentID(0);
-        String parentId2 = commit.getParentID(1);
-
-        if (parentId1 != null && !parentId1.isEmpty()) {
-            Commit parent1 = readObject(join(COMMITS, parentId1), Commit.class);
-            queue.add(parent1);
-        }
-
-        if (parentId2 != null && !parentId2.isEmpty()) {
-            Commit parent2 = readObject(join(COMMITS, parentId2), Commit.class);
-            queue.add(parent2);
+            commit2 = readObject(join(CWD, commit2.getParentID(0)), Commit.class);
         }
     }
 
