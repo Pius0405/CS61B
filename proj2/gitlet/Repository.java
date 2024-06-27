@@ -425,32 +425,43 @@ public class Repository {
 
         branch1pending.add(commit1);
         branch2pending.add(commit2);
-        Commit thisCommit;
-        while (! branch1pending.isEmpty() || ! branch2pending.isEmpty()) {
-            thisCommit = branch1pending.poll();
-            if (branch2visited.contains(thisCommit)) {
-                return thisCommit;
-            }
-            insertQueue(branch1pending, thisCommit);
-            branch1visited.add(thisCommit);
 
-            thisCommit = branch2pending.poll();
-            if (branch1visited.contains(thisCommit)) {
-                return thisCommit;
+        while (!branch1pending.isEmpty() || !branch2pending.isEmpty()) {
+            if (!branch1pending.isEmpty()) {
+                Commit thisCommit = branch1pending.poll();
+                if (branch2visited.contains(thisCommit)) {
+                    return thisCommit;
+                }
+                branch1visited.add(thisCommit);
+                insertQueue(branch1pending, thisCommit);
             }
-            insertQueue(branch2pending, thisCommit);
-            branch2visited.add(thisCommit);
+
+            if (!branch2pending.isEmpty()) {
+                Commit thisCommit = branch2pending.poll();
+                if (branch1visited.contains(thisCommit)) {
+                    return thisCommit;
+                }
+                branch2visited.add(thisCommit);
+                insertQueue(branch2pending, thisCommit);
+            }
         }
         return null;
     }
 
-    private static void insertQueue(Queue queue, Commit commit) {
-        queue.remove(commit);
-        if (! commit.getParentID(0).equals("")) {
-            queue.add(readObject(join(COMMITS, commit.getParentID(0)), Commit.class));
+    private static void insertQueue(Queue<Commit> queue, Commit commit) {
+        if (commit == null) return;
+
+        String parentId1 = commit.getParentID(0);
+        String parentId2 = commit.getParentID(1);
+
+        if (parentId1 != null && !parentId1.isEmpty()) {
+            Commit parent1 = readObject(join(COMMITS, parentId1), Commit.class);
+            queue.add(parent1);
         }
-        if (! commit.getParentID(1).equals("")) {
-            queue.add(readObject(join(COMMITS, commit.getParentID(1)), Commit.class));
+
+        if (parentId2 != null && !parentId2.isEmpty()) {
+            Commit parent2 = readObject(join(COMMITS, parentId2), Commit.class);
+            queue.add(parent2);
         }
     }
 
@@ -534,7 +545,7 @@ public class Repository {
         }
         String commitMessage = "Merged " + targetBranch + "into" + readContentsAsString(HEAD);
         commit(commitMessage, targetCommitID);
-        if (gotConflict) { 
+        if (gotConflict) {
             System.out.println("Encountered a merge conflict.");
         }
     }
