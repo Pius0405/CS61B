@@ -81,12 +81,12 @@ public class Repository {
         stagingArea.save();
     }
 
-    public static void commit(String message) {
+    public static void commit(String message, String parent2ID) {
         if (STAGED_FOR_ADD.listFiles().length + STAGED_FOR_REMOVAL.listFiles().length == 0) {
             exit("No changes added to the commit.");
         }
         Commit currentCommit = getCurrentCommit();
-        Commit newCommit = new Commit(new Date(), new String[] {currentCommit.getID(), ""}, message, currentCommit.getTrackedFiles());
+        Commit newCommit = new Commit(new Date(), new String[] {currentCommit.getID(), parent2ID}, message, currentCommit.getTrackedFiles());
         List<String> filenames = plainFilenamesIn(STAGED_FOR_REMOVAL);
         for (String filename : filenames) {
             newCommit.removeTrackRec(filename);
@@ -477,7 +477,7 @@ public class Repository {
             checkoutBranch(targetBranch);
             exit("Current branch fast-forwarded.");
         }
-
+        boolean gotConflict = false;
         HashMap<String, String> splitPointMap = splitPoint.getTrackedFiles();
         HashMap<String, String> currentMap = currentCommit.getTrackedFiles();
         HashMap<String, String> branchMap = targetCommit.getTrackedFiles();
@@ -496,10 +496,12 @@ public class Repository {
                 } else {
                     if (!branchMap.get(filename).equals(splitPointMap.get(filename))) {
                         if (branchMap.get(filename) == null) {
-                            //conflict
+                            conflict(filename, currentCommit, targetCommit);
+                            gotConflict = true;
                         } else {
                             if (!branchMap.get(filename).equals(currentMap.get(filename))) {
-                                //conflict
+                                conflict(filename, currentCommit, targetCommit);
+                                gotConflict = true;
                             }
                         }
                     }
@@ -507,7 +509,8 @@ public class Repository {
             } else {
                 if (!splitPointMap.get(filename).equals(branchMap.get(filename))) {
                     if (branchMap.get(filename) != null) {
-                        //conflict
+                        conflict(filename, currentCommit, targetCommit);
+                        gotConflict = true;
                     }
                 }
             }
@@ -519,7 +522,8 @@ public class Repository {
         for (String filename : givenBranchFiles) {
             if (currentBranchFiles.contains(filename)) {
                 if (!currentCommit.getTrackedFileBlobID(filename).equals(targetCommit.getTrackedFileBlobID(filename))) {
-                    //conflict
+                    conflict(filename, currentCommit, targetCommit);
+                    gotConflict = true;
                 }
             }
         }
@@ -528,7 +532,28 @@ public class Repository {
             checkoutCommitFile(targetCommitID, filename);
             stagingArea.addRec(filename, targetCommit.getTrackedFileBlobID(filename));
         }
+        String commitMessage = "Merged " + targetBranch + "into" + readContentsAsString(HEAD);
+        commit(commitMessage, targetCommitID);
+        if (gotConflict) { 
+            System.out.println("Encountered a merge conflict.");
+        }
+    }
 
+    private static void conflict(String filename, Commit currentCommit, Commit targetCommit) {
+        String newContent = "<<<<<<< HEAD\n";
+        newContent = newContent + getTrackedFileContents(currentCommit, filename) + "=======\n";
+        newContent = newContent + getTrackedFileContents(targetCommit, filename) + ">>>>>>>";
+        writeContents(join(CWD, filename), newContent);
+        add(filename);
+    }
+
+    private static String getTrackedFileContents(Commit commit, String filename) {
+        if (commit.getTrackedFileBlobID(filename) == null) {
+            return "";
+        } else {
+            Blob blob = readObject(join(BLOBS, commit.getTrackedFileBlobID(filename)), Blob.class);
+            return blob.getContents();
+        }
     }
 
 

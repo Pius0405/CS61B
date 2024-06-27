@@ -30,7 +30,7 @@ public class Main {
                 if (args.length == 1 || args[1].equals("")){
                     exit("Please enter a commit message.");
                 }
-                commit(args[1]);
+                commit(args[1], "");
                 break;
             case "rm":
                 inGitletDir();
