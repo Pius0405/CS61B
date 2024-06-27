@@ -472,7 +472,9 @@ public class Repository {
                             rm(filename);
                         } else {
                             checkoutCommitFile(targetCommitID, filename);
-                            stagingArea.addRec(filename, targetCommit.getTrackedFileBlobID(filename));
+                            String blobID = targetCommit.getTrackedFileBlobID(filename);
+                            stagingArea.addRec(filename, blobID);
+                            join(BLOBS, blobID).renameTo(join(STAGED_FOR_ADD, blobID));
                         }
                     }
                 } else {
@@ -512,8 +514,11 @@ public class Repository {
         givenBranchFiles.removeAll(currentBranchFiles);
         for (String filename : givenBranchFiles){
             checkoutCommitFile(targetCommitID, filename);
-            stagingArea.addRec(filename, targetCommit.getTrackedFileBlobID(filename));
+            String blobID = targetCommit.getTrackedFileBlobID(filename);
+            stagingArea.addRec(filename, blobID);
+            join(BLOBS, blobID).renameTo(join(STAGED_FOR_REMOVAL, blobID));
         }
+        stagingArea.save();
         String commitMessage = "Merged " + targetBranch + "into" + readContentsAsString(HEAD);
         commit(commitMessage, targetCommitID);
         if (gotConflict) {
