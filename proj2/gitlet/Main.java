@@ -55,7 +55,7 @@ public class Main {
             case "checkout":
                 inGitletDir();
                 if (args.length == 4 && args[2].equals("--")) {
-                    checkoutCommit(args[1], args[3]);
+                    checkoutCommitFile(args[1], args[3]);
                 } else if (args.length == 3 && args[1].equals("--")) {
                     checkoutFile(args[2]);
                 } else if (args.length == 2) {

@@ -319,9 +319,9 @@ public class Repository {
         }
     }
 
-    public static void checkoutCommit(String commitID, String filename) {
+    public static void checkoutCommitFile(String commitID, String filename) {
         Commit targetCommit = findCommit(commitID);
-        if (targetCommit != null){
+        if (targetCommit != null) {
             renewCWDFile(targetCommit, filename);
         } else {
             exit("No commit with that id exists.");
@@ -452,14 +452,14 @@ public class Repository {
         }
     }
 
-    public static void merge(String targetBranch){
-        if (! join(HEADS, targetBranch).exists()){
+    public static void merge(String targetBranch) {
+        if (!join(HEADS, targetBranch).exists()) {
             exit("A branch with that name does not exists.");
         }
         if (STAGED_FOR_ADD.list().length != 0 || STAGED_FOR_REMOVAL.list().length != 0) {
             exit("You have uncommitted changes.");
         }
-        if (targetBranch.equals(readContentsAsString(HEAD))){
+        if (targetBranch.equals(readContentsAsString(HEAD))) {
             exit("Cannot merge a branch with itself.");
         }
         String currentBranch = readContentsAsString(HEAD);
@@ -475,7 +475,60 @@ public class Repository {
             checkoutBranch(targetBranch);
             exit("Current branch fast-forwarded.");
         }
+
+        HashMap<String, String> splitPointMap = splitPoint.getTrackedFiles();
+        HashMap<String, String> currentMap = currentCommit.getTrackedFiles();
+        HashMap<String, String> branchMap = targetCommit.getTrackedFiles();
+        Stage stagingArea = getStagingArea();
+        for (String filename : splitPointMap.keySet()) {
+            if (currentMap.get(filename) != null) {
+                if (currentMap.get(filename).equals(splitPointMap.get(filename))) {
+                    if (!branchMap.get(filename).equals(splitPointMap.get(filename))) {
+                        if (branchMap.get(filename) == null) {
+                            rm(filename);
+                        } else {
+                            checkoutCommitFile(targetCommitID, filename);
+                            stagingArea.addRec(filename, targetCommit.getTrackedFileBlobID(filename));
+                        }
+                    }
+                } else {
+                    if (!branchMap.get(filename).equals(splitPointMap.get(filename))) {
+                        if (branchMap.get(filename) == null) {
+                            //conflict
+                        } else {
+                            if (!branchMap.get(filename).equals(currentMap.get(filename))) {
+                                //conflict
+                            }
+                        }
+                    }
+                }
+            } else {
+                if (!splitPointMap.get(filename).equals(branchMap.get(filename))) {
+                    if (branchMap.get(filename) != null) {
+                        //conflict
+                    }
+                }
+            }
+        }
+        Set<String> currentBranchFiles = currentCommit.getTrackedFiles().keySet();
+        Set<String> splitPointFiles = splitPoint.getTrackedFiles().keySet();
+        Set<String> givenBranchFiles = targetCommit.getTrackedFiles().keySet();
+        givenBranchFiles.removeAll(splitPointFiles);
+        for (String filename : givenBranchFiles) {
+            if (currentBranchFiles.contains(filename)) {
+                if (!currentCommit.getTrackedFileBlobID(filename).equals(targetCommit.getTrackedFileBlobID(filename))) {
+                    //conflict
+                }
+            }
+        }
+        givenBranchFiles.removeAll(currentBranchFiles);
+        for (String filename : givenBranchFiles){
+            checkoutCommitFile(targetCommitID, filename);
+            stagingArea.addRec(filename, targetCommit.getTrackedFileBlobID(filename));
+        }
+
     }
+
 
     //Utility methods
 
