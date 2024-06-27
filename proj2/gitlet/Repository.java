@@ -386,39 +386,70 @@ public class Repository {
         }
     }
 
-    private static String getSplitPoint(Commit commit1, Commit commit2){
-        HashMap<String, Integer> branch1Ancestors = new HashMap<>();
-        Set<String> branch2Ancestors = new HashSet<>();
-        String nextParentID;
-        while (true) {
-            branch1Ancestors.put(commit1.getID(), 1);
-            nextParentID = commit1.getParentID(0);
-            if (nextParentID.equals("")) {
-                break;
-            }
-            commit1 = readObject(join(COMMITS, nextParentID), Commit.class);
-        }
+    /**
+     * Runtime analysis:
+     * -------------------------------------------------------------------------------------------------------------
+     * Cost model --> number of nodes (commits) accessed
+     * In the worst case scenario the commits are evenly distributed between two branches and the
+     * latest common ancestor is the initial commit
+     * -------------------------------------------------------------------------------------------------------------
+     * Method 1 --> Nested for loops (not recommended)
+     * Explanation : Iterate over every single commit of any branch and at each time compare it with every
+     * commit of the other branch.
+     * Runtime : O(N^2)
+     * Analysis : Outer loop has N/2 iterations and inner loop has N/2 iterations but inner loop is executed
+     * for N/2 times so the number of nodes accessed is N/2 + (N/2)^2. This shows that the time complexity is
+     * quadratic.
+     * -------------------------------------------------------------------------------------------------------------
+     * Method 2 --> Breadth first search
+     * Explanation : Start from the head commit of each branch and add them to queue. Maintain two sets of visited
+     * commits for each branch.
+     * 1. Dequeue form either branch's queue
+     * 2. Check if the other branch's visited set has the current commit
+     * !!! First commit that is found appearing in a branch and visited in the other branch is the split point
+     * 3. Return if true or else add the current commit parents to the queue
+     * 4. Repeat for the other branch until a split point is found.
+     * Runtime : O(N)
+     * Analysis : Each commit is visited only once so if there are N commits in total there are N visits causing
+     * the runtime to be O(N).
 
-        while (true) {
-            branch2Ancestors.add(commit2.getID());
-            nextParentID = commit2.getParentID(0);
-            if (nextParentID.equals("")) {
-                break;
-            }
-            commit2 = readObject(join(COMMITS, nextParentID), Commit.class);
-        }
+     * @param commit1 head commit of the current branch
+     * @param commit2 Head commit of the given branch
+     * @return commitID of the latest common ancestor
+     */
+    private static Commit getSplitPoint(Commit commit1, Commit commit2) {
+        Set<String> branch1visited = new HashSet<>();
+        Set<String> branch2visited = new HashSet<>();
+        Queue<Commit> branch1pending = new LinkedList<>();
+        Queue<Commit> branch2pending = new LinkedList<>();
 
-        String latestCommonAncestor = "";
-        Double smallestDepth = Double.POSITIVE_INFINITY;
-        for (String commitID : branch1Ancestors.keySet()) {
-            if (branch2Ancestors.contains(commitID)) {
-                if (latestCommonAncestor.equals("") || branch1Ancestors.get(commitID) < smallestDepth) {
-                    latestCommonAncestor = commitID;
-                    smallestDepth = Double.valueOf(branch1Ancestors.get(commitID));
-                }
+        branch1pending.add(commit1);
+        branch2pending.add(commit2);
+        Commit thisCommit;
+        while (! branch1pending.isEmpty() || ! branch2pending.isEmpty()) {
+            thisCommit = branch1pending.poll();
+            if (branch2visited.contains(thisCommit)) {
+                return thisCommit;
             }
+            insertQueue(branch1pending, thisCommit);
+
+            thisCommit = branch2pending.poll();
+            if (branch1visited.contains(thisCommit)) {
+                return thisCommit;
+            }
+            insertQueue(branch2pending, thisCommit);
         }
-        return latestCommonAncestor;
+        return null;
+    }
+
+    private static void insertQueue(Queue queue, Commit commit) {
+        queue.remove(commit);
+        if (! commit.getParentID(0).equals("")) {
+            queue.add(readObject(join(COMMITS, commit.getParentID(0)), Commit.class));
+        }
+        if (! commit.getParentID(1).equals("")) {
+            queue.add(readObject(join(COMMITS, commit.getParentID(1)), Commit.class));
+        }
     }
 
     public static void merge(String targetBranch){
@@ -435,12 +466,12 @@ public class Repository {
         String targetCommitID = readContentsAsString(join(HEADS, targetBranch));
         Commit targetCommit = readObject(join(COMMITS, targetCommitID), Commit.class);
         Commit currentCommit = getCurrentCommit();
-        String splitPointID = getSplitPoint(currentCommit, targetCommit);
+        Commit splitPoint = getSplitPoint(currentCommit, targetCommit);
         catchUntrackedFiles(currentCommit, targetCommit);
-        if (splitPointID.equals(readContentsAsString(join(HEADS, targetBranch)))) {
+        if (splitPoint.getID().equals(readContentsAsString(join(HEADS, targetBranch)))) {
             exit("Given branch is an ancestor of the current branch.");
         }
-        if (splitPointID.equals(readContentsAsString(join(HEADS, currentBranch)))) {
+        if (splitPoint.getID().equals(readContentsAsString(join(HEADS, currentBranch)))) {
             checkoutBranch(targetBranch);
             exit("Current branch fast-forwarded.");
         }
