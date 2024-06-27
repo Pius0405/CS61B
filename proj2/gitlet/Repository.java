@@ -425,14 +425,14 @@ public class Repository {
             if (commit1.getParentID(0).equals("")) {
                 break;
             }
-            commit1 = readObject(join(CWD, commit1.getParentID(0)), Commit.class);
+            commit1 = readObject(join(COMMITS, commit1.getParentID(0)), Commit.class);
             depth += 1;
         }
         while (true) {
             if (branch1visited.containsKey(commit2) || commit2.getParentID(0).equals("")) {
                 return commit2;
             }
-            commit2 = readObject(join(CWD, commit2.getParentID(0)), Commit.class);
+            commit2 = readObject(join(COMMITS, commit2.getParentID(0)), Commit.class);
         }
     }
 
