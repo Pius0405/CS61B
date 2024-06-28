@@ -531,7 +531,7 @@ public class Repository {
             join(BLOBS, blobID).renameTo(join(STAGED_FOR_REMOVAL, blobID));
         }
         stagingArea.save();
-        String commitMessage = "Merged " + targetBranch + "into" + readContentsAsString(HEAD);
+        String commitMessage = "Merged " + targetBranch + " into " + readContentsAsString(HEAD);
         commit(commitMessage, targetCommitID);
         if (gotConflict) {
             System.out.println("Encountered a merge conflict.");
