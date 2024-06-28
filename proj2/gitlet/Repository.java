@@ -539,9 +539,10 @@ public class Repository {
     }
 
     private static void conflict(String filename, Commit currentCommit, Commit targetCommit) {
-        String newContent = "<<<<<<< HEAD\n";
-        newContent = newContent + getTrackedFileContents(currentCommit, filename) + "=======\n";
-        newContent = newContent + getTrackedFileContents(targetCommit, filename) + ">>>>>>>";
+        String newContent = "<<<<<<< HEAD\n" + getTrackedFileContents(currentCommit, filename);
+        newContent = newContent  + "=======\n";
+        newContent = newContent + getTrackedFileContents(targetCommit, filename);
+        newContent = newContent  + ">>>>>>>\n";
         writeContents(join(CWD, filename), newContent);
         add(filename);
     }
