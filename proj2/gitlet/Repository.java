@@ -49,7 +49,8 @@ public class Repository {
         } catch (IOException e) {
             throw error("IOException: Cannot create file or directory");
         }
-        Commit initialCommit = new Commit(new Date(0), new String[] {"", ""}, "initial commit", new HashMap<String, String>());
+        Commit initialCommit = new Commit(new Date(0), new String[] {"", ""},
+                "initial commit", new HashMap<String, String>());
         initialCommit.setID();
         initialCommit.save();
         writeContents(MASTER, initialCommit.getID());
@@ -86,7 +87,8 @@ public class Repository {
             exit("No changes added to the commit.");
         }
         Commit currentCommit = getCurrentCommit();
-        Commit newCommit = new Commit(new Date(), new String[] {currentCommit.getID(), parent2ID}, message, currentCommit.getTrackedFiles());
+        Commit newCommit = new Commit(new Date(), new String[] {currentCommit.getID(), parent2ID},
+                message, currentCommit.getTrackedFiles());
         List<String> filenames = plainFilenamesIn(STAGED_FOR_REMOVAL);
         for (String filename : filenames) {
             newCommit.removeTrackRec(filename);
@@ -130,7 +132,8 @@ public class Repository {
         System.out.println("===");
         System.out.println("commit " + currentCommit.getID());
         if (!currentCommit.getParentID(1).equals("")) {
-            System.out.println("Merge: " + currentCommit.getParentID(0).substring(0, 7) + " " + currentCommit.getParentID(1).substring(0, 7));
+            System.out.println("Merge: " + currentCommit.getParentID(0).substring(0, 7) +
+                    " " + currentCommit.getParentID(1).substring(0, 7));
             System.out.println("Date: " + currentCommit.timestampInString());
             System.out.println(currentCommit.getMessage());
         } else {
@@ -210,28 +213,28 @@ public class Repository {
 
         Commit currentCommit = getCurrentCommit();
         Stage stagingArea = getStagingArea();
-        for (String filename : currentCommit.getTrackedFiles().keySet()){
-            File CWDFile = join(CWD,filename);
-            if (CWDFile.exists()){
-                Blob curVersion = new Blob(readContentsAsString(CWDFile), filename);
+        for (String filename : currentCommit.getTrackedFiles().keySet()) {
+            File cwdFile = join(CWD, filename);
+            if (cwdFile.exists()){
+                Blob curVersion = new Blob(readContentsAsString(cwdFile), filename);
                 String trackedVersionID = currentCommit.getTrackedFileBlobID(filename);
-                if (! curVersion.getID().equals(trackedVersionID)){
-                    if (stagingArea.getStagedFileBlobID(filename) == null){
+                if (!curVersion.getID().equals(trackedVersionID)) {
+                    if (stagingArea.getStagedFileBlobID(filename) == null) {
                         info.add(filename + " (modified)");
                     }
                 }
             } else {
-                if (! join(STAGED_FOR_REMOVAL, filename).exists()) {
+                if (!join(STAGED_FOR_REMOVAL, filename).exists()) {
                     info.add(filename + " (deleted)");
                 }
             }
         }
 
         for (String filename : stagingArea.getStagedFiles()){
-            File CWDFile = join(CWD,filename);
-            if (CWDFile.exists()){
-                Blob curVersion = new Blob(readContentsAsString(CWDFile), filename);
-                if (! stagingArea.getStagedFileBlobID(filename).equals(curVersion.getID())) {
+            File cwdFile = join(CWD, filename);
+            if (cwdFile.exists()) {
+                Blob curVersion = new Blob(readContentsAsString(cwdFile), filename);
+                if (!stagingArea.getStagedFileBlobID(filename).equals(curVersion.getID())) {
                     info.add(filename + " (modified)");
                 }
             } else {
@@ -242,9 +245,9 @@ public class Repository {
         statusPrinter("Modifications Not Staged For Commit", info);
         info.clear();
 
-        for (String filename : plainFilenamesIn(CWD)){
-            if (currentCommit.getTrackedFileBlobID(filename) == null){
-                if (stagingArea.getStagedFileBlobID(filename) == null){
+        for (String filename : plainFilenamesIn(CWD)) {
+            if (currentCommit.getTrackedFileBlobID(filename) == null) {
+                if (stagingArea.getStagedFileBlobID(filename) == null) {
                     info.add(filename);
                 }
             }  else {
@@ -262,9 +265,9 @@ public class Repository {
      * to the version in the commit if exists.
      */
     private static void renewCWDFile(Commit commit, String filename) {
-        String BlobID = commit.getTrackedFileBlobID(filename);
-        if (BlobID != null) {
-            Blob targetBlob = readObject(join(BLOBS, BlobID), Blob.class);
+        String blobID = commit.getTrackedFileBlobID(filename);
+        if (blobID != null) {
+            Blob targetBlob = readObject(join(BLOBS, blobID), Blob.class);
             writeContents(join(CWD, filename), targetBlob.getContents());
         } else {
             exit("File does not exists in that commit.");
@@ -276,7 +279,7 @@ public class Repository {
     /**
      * Changes all files in CWD to version of files in the target commit
      */
-    private static void renewCWDFile(Commit currentCommit, Commit targetCommit){
+    private static void renewCWDFile(Commit currentCommit, Commit targetCommit) {
         Set<String> trackedInTargetBranch = targetCommit.getTrackedFiles().keySet();
         for (String filename: trackedInTargetBranch) {
             String newBlobID = targetCommit.getTrackedFileBlobID(filename);
@@ -309,11 +312,12 @@ public class Repository {
      * Check if there are any files in the CWD that are not tracked in the current commit
      * but tracked by target commit
      */
-    private static void catchUntrackedFiles(Commit currentCommit, Commit targetCommit){
+    private static void catchUntrackedFiles(Commit currentCommit, Commit targetCommit) {
         Set<String> trackedInCurrentBranch = currentCommit.getTrackedFiles().keySet();
         Set<String> trackedInTargetBranch = targetCommit.getTrackedFiles().keySet();
         for (String filename: plainFilenamesIn(CWD)) {
-            if (!trackedInCurrentBranch.contains(filename) && trackedInTargetBranch.contains(filename)){
+            if (!trackedInCurrentBranch.contains(filename) &&
+                    trackedInTargetBranch.contains(filename)) {
                 exit("There is an untracked file in the way; delete it, or add and commit it first.");
             }
         }

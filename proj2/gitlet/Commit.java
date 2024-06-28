@@ -26,7 +26,7 @@ public class Commit implements Serializable {
     private HashMap<String, String> trackedFiles;
     private final Date timestamp;
 
-    public Commit (Date currentTime, String[] parents,
+    public Commit(Date currentTime, String[] parents,
                    String message, HashMap<String, String> trackedFiles) {
         this.message = message;
         this.parents = parents;
