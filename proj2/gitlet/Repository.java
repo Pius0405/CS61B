@@ -418,23 +418,23 @@ public class Repository {
      * @return commitID of the latest common ancestor
      */
     private static Commit getSplitPoint(Commit commit1, Commit commit2) {
-        Set<Commit> branch1commits = BFS(commit1);
-        Set<Commit> branch2commits = BFS(commit2);
-        for (Commit commit : branch1commits) {
-            if (branch2commits.contains(commit)) {
-                return commit;
+        Set<String> branch1commits = BFS(commit1);
+        Set<String> branch2commits = BFS(commit2);
+        for (String commitID : branch1commits) {
+            if (branch2commits.contains(commitID)) {
+                return readObject(join(COMMITS, commitID), Commit.class);
             }
         }
         return null;
     }
 
-    private static Set<Commit> BFS(Commit commit) {
-        Set<Commit> visited = new HashSet<>();
+    private static Set<String> BFS(Commit commit) {
+        Set<String> visited = new LinkedHashSet<>();
         Queue<Commit> pending = new LinkedList<>();
         pending.add(commit);
         while (!pending.isEmpty()) {
             commit = pending.poll();
-            if (visited.add(commit)) { // Add to visited and check if it was already present
+            if (visited.add(commit.getID())) { // Add to visited and check if it was already present
                 String parentId1 = commit.getParentID(0);
                 if (!parentId1.equals("")) {
                     pending.add(readObject(join(COMMITS, parentId1), Commit.class));
