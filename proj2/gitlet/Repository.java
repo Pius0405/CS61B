@@ -429,11 +429,16 @@ public class Repository {
             depth += 1;
         }
         while (true) {
-            if (branch1visited.containsKey(commit2) || commit2.getParentID(0).equals("")) {
+            if (branch1visited.containsKey(commit2)) {
                 return commit2;
             }
-            commit2 = readObject(join(COMMITS, commit2.getParentID(0)), Commit.class);
+            if (!commit2.getParentID(0).equals("")) {
+                commit2 = readObject(join(COMMITS, commit2.getParentID(0)), Commit.class);
+            } else {
+                break;
+            }
         }
+        return null;
     }
 
     public static void merge(String targetBranch) {
