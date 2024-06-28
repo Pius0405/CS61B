@@ -492,11 +492,13 @@ public class Repository {
                 } else {
                     if (!splitPointMap.get(filename).equals(branchMap.get(filename))) {
                         if (branchMap.get(filename) == null) {
-                            conflict(filename, currentCommit, targetCommit);
+                            String blobID = conflict(filename, currentCommit, targetCommit);
+                            stagingArea.addRec(filename, blobID);
                             gotConflict = true;
                         } else {
                             if (!branchMap.get(filename).equals(currentMap.get(filename))) {
-                                conflict(filename, currentCommit, targetCommit);
+                                String blobID = conflict(filename, currentCommit, targetCommit);
+                                stagingArea.addRec(filename, blobID);
                                 gotConflict = true;
                             }
                         }
@@ -505,7 +507,8 @@ public class Repository {
             } else {
                 if (!splitPointMap.get(filename).equals(branchMap.get(filename))) {
                     if (branchMap.get(filename) != null) {
-                        conflict(filename, currentCommit, targetCommit);
+                        String blobID = conflict(filename, currentCommit, targetCommit);
+                        stagingArea.addRec(filename, blobID);
                         gotConflict = true;
                     }
                 }
@@ -518,7 +521,8 @@ public class Repository {
         for (String filename : givenBranchFiles) {
             if (currentBranchFiles.contains(filename)) {
                 if (!currentCommit.getTrackedFileBlobID(filename).equals(targetCommit.getTrackedFileBlobID(filename))) {
-                    conflict(filename, currentCommit, targetCommit);
+                    String blobID = conflict(filename, currentCommit, targetCommit);
+                    stagingArea.addRec(filename, blobID);
                     gotConflict = true;
                 }
             }
@@ -538,13 +542,15 @@ public class Repository {
         }
     }
 
-    private static void conflict(String filename, Commit currentCommit, Commit targetCommit) {
+    private static String conflict(String filename, Commit currentCommit, Commit targetCommit) {
         String newContent = "<<<<<<< HEAD\n" + getTrackedFileContents(currentCommit, filename);
         newContent = newContent  + "=======\n";
         newContent = newContent + getTrackedFileContents(targetCommit, filename);
         newContent = newContent  + ">>>>>>>\n";
         writeContents(join(CWD, filename), newContent);
-        add(filename);
+        Blob conflictBlob = new Blob(newContent, filename);
+        writeObject(join(STAGED_FOR_ADD, conflictBlob.getID()), conflictBlob);
+        return conflictBlob.getID();
     }
 
     private static String getTrackedFileContents(Commit commit, String filename) {
