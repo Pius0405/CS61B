@@ -560,7 +560,7 @@ public class Repository {
     private static String conflict(String filename, Commit currentCommit, Commit targetCommit) {
         String newContent = "<<<<<<< HEAD\n" + currentCommit.getTrackedFileContents(filename);
         newContent = newContent  + "=======\n";
-        newContent = newContent + currentCommit.getTrackedFileContents(filename);
+        newContent = newContent + targetCommit.getTrackedFileContents(filename);
         newContent = newContent  + ">>>>>>>\n";
         writeContents(join(CWD, filename), newContent);
         Blob conflictBlob = new Blob(newContent, filename);
