@@ -132,7 +132,7 @@ public class Repository {
         if (!currentCommit.getParentID(1).equals("")) {
             System.out.println("Merge: " + currentCommit.getParentID(0).substring(0, 7) + " " + currentCommit.getParentID(1).substring(0, 7));
             System.out.println("Date: " + currentCommit.timestampInString());
-            System.out.println("Merged development into master.");
+            System.out.println(currentCommit.getMessage());
         } else {
             System.out.println("Date: " + currentCommit.timestampInString());
             System.out.println(currentCommit.getMessage());
