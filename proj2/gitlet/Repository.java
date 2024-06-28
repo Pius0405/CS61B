@@ -418,8 +418,8 @@ public class Repository {
      * @return commitID of the latest common ancestor
      */
     private static Commit getSplitPoint(Commit commit1, Commit commit2) {
-        ArrayList<Commit> branch1commits = BFS(commit1);
-        ArrayList<Commit> branch2commits = BFS(commit2);
+        Set<Commit> branch1commits = BFS(commit1);
+        Set<Commit> branch2commits = BFS(commit2);
         for (Commit commit : branch1commits) {
             if (branch2commits.contains(commit)) {
                 return commit;
@@ -428,20 +428,21 @@ public class Repository {
         return null;
     }
 
-    private static ArrayList<Commit> BFS(Commit commit) {
-        ArrayList<Commit> visited = new ArrayList<>();
+    private static Set<Commit> BFS(Commit commit) {
+        Set<Commit> visited = new HashSet<>();
         Queue<Commit> pending = new LinkedList<>();
         pending.add(commit);
         while (!pending.isEmpty()) {
             commit = pending.poll();
-            if (!visited.contains(commit)) {
-                visited.add(commit);
-            }
-            if (!commit.getParentID(0).equals("")) {
-                pending.add(readObject(join(COMMITS, commit.getParentID(0)), Commit.class));
-            }
-            if (!commit.getParentID(1).equals("")) {
-                pending.add(readObject(join(COMMITS, commit.getParentID(1)), Commit.class));
+            if (visited.add(commit)) { // Add to visited and check if it was already present
+                String parentId1 = commit.getParentID(0);
+                if (!parentId1.equals("")) {
+                    pending.add(readObject(join(COMMITS, parentId1), Commit.class));
+                }
+                String parentId2 = commit.getParentID(1);
+                if (!parentId2.equals("")) {
+                    pending.add(readObject(join(COMMITS, parentId2), Commit.class));
+                }
             }
         }
         return visited;
