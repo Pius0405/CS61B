@@ -318,8 +318,8 @@ public class Repository {
         for (String filename: plainFilenamesIn(CWD)) {
             if (!trackedInCurrentBranch.contains(filename)
                    && trackedInTargetBranch.contains(filename)) {
-                exit("There is an untracked file in the way; delete it, " +
-                        "or add and commit it first.");
+                exit("There is an untracked file in the way; delete it, "
+                        + "or add and commit it first.");
             }
         }
     }
@@ -526,7 +526,9 @@ public class Repository {
         givenBranchFiles.removeAll(splitPointFiles);
         for (String filename : givenBranchFiles) {
             if (currentBranchFiles.contains(filename)) {
-                if (!currentCommit.getTrackedFileBlobID(filename).equals(targetCommit.getTrackedFileBlobID(filename))) {
+                String currentVersion = currentCommit.getTrackedFileBlobID(filename);
+                String otherVersion = targetCommit.getTrackedFileBlobID(filename);
+                if (!currentVersion.equals(otherVersion)) {
                     String blobID = conflict(filename, currentCommit, targetCommit);
                     stagingArea.addRec(filename, blobID);
                     gotConflict = true;
@@ -541,7 +543,8 @@ public class Repository {
             join(BLOBS, blobID).renameTo(join(STAGED_FOR_REMOVAL, blobID));
         }
         stagingArea.save();
-        String commitMessage = "Merged " + targetBranch + " into " + readContentsAsString(HEAD) + ".";
+        String commitMessage = "Merged " + targetBranch + " into "
+                + readContentsAsString(HEAD) + ".";
         commit(commitMessage, targetCommitID);
         if (gotConflict) {
             System.out.println("Encountered a merge conflict.");
