@@ -479,7 +479,7 @@ public class Repository {
         for (String filename : splitPointMap.keySet()) {
             if (currentMap.get(filename) != null) {
                 if (currentMap.get(filename).equals(splitPointMap.get(filename))) {
-                    if (!branchMap.get(filename).equals(splitPointMap.get(filename))) {
+                    if (!splitPointMap.get(filename).equals(branchMap.get(filename))) {
                         if (branchMap.get(filename) == null) {
                             rm(filename);
                         } else {
