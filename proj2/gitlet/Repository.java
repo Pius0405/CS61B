@@ -490,7 +490,7 @@ public class Repository {
                         }
                     }
                 } else {
-                    if (!branchMap.get(filename).equals(splitPointMap.get(filename))) {
+                    if (!splitPointMap.get(filename).equals(branchMap.get(filename))) {
                         if (branchMap.get(filename) == null) {
                             conflict(filename, currentCommit, targetCommit);
                             gotConflict = true;
