@@ -408,13 +408,11 @@ public class Repository {
      * ---------------------------------------------------
      * Method 2 --> Breadth first search
      * Explanation : Start from the head commit of each branch and add them to queue.
-     * Maintain two sets of visited commits for each branch.
-     * 1. Dequeue form either branch's queue
-     * 2. Check if the other branch's visited set has the current commit
-     * !!! First commit that is found appearing in a branch and visited in the other branch
-     * is the split point
-     * 3. Return if true or else add the current commit parents to the queue
-     * 4. Repeat for the other branch until a split point is found.
+     * Maintain two sets of visited commits for each branch using BFS algorithm.
+     * Iterate over one set of visited commits for a branch and check if the other
+     * set contains that commit.
+     * Since LinkedHashSet maintains the insertion order, the first commit that appears
+     * in both sets is the latest common ancestor
      * Runtime : O(N)
      * Analysis : Each commit is visited only once so if there are N commits in total
      * there are N visits causing the runtime to be O(N).
@@ -454,7 +452,9 @@ public class Repository {
         return visited;
     }
 
-    public static void merge(String targetBranch) {
+    private static void checkMergeErr(String targetBranch, Commit currentCommit,
+                                      Commit splitPoint, Commit targetCommit) {
+        String currentBranch = readContentsAsString(HEAD);
         if (!join(HEADS, targetBranch).exists()) {
             exit("A branch with that name does not exists.");
         }
@@ -464,11 +464,6 @@ public class Repository {
         if (targetBranch.equals(readContentsAsString(HEAD))) {
             exit("Cannot merge a branch with itself.");
         }
-        String currentBranch = readContentsAsString(HEAD);
-        String targetCommitID = readContentsAsString(join(HEADS, targetBranch));
-        Commit targetCommit = readObject(join(COMMITS, targetCommitID), Commit.class);
-        Commit currentCommit = getCurrentCommit();
-        Commit splitPoint = getSplitPoint(currentCommit, targetCommit);
         catchUntrackedFiles(currentCommit, targetCommit);
         if (splitPoint.getID().equals(readContentsAsString(join(HEADS, targetBranch)))) {
             exit("Given branch is an ancestor of the current branch.");
@@ -477,6 +472,14 @@ public class Repository {
             checkoutBranch(targetBranch);
             exit("Current branch fast-forwarded.");
         }
+    }
+
+    public static void merge(String targetBranch) {
+        String targetCommitID = readContentsAsString(join(HEADS, targetBranch));
+        Commit targetCommit = readObject(join(COMMITS, targetCommitID), Commit.class);
+        Commit currentCommit = getCurrentCommit();
+        Commit splitPoint = getSplitPoint(currentCommit, targetCommit);
+        checkMergeErr(targetBranch, currentCommit, splitPoint, targetCommit);
         boolean gotConflict = false;
         HashMap<String, String> splitPointMap = splitPoint.getTrackedFiles();
         HashMap<String, String> currentMap = currentCommit.getTrackedFiles();
