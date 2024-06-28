@@ -70,7 +70,7 @@ public class Main {
                 break;
             case "rm-branch":
                 inGitletDir();
-                rm_branch(args[1]);
+                rmBranch(args[1]);
                 break;
             case "reset":
                 inGitletDir();

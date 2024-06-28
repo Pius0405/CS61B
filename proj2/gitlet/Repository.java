@@ -132,8 +132,8 @@ public class Repository {
         System.out.println("===");
         System.out.println("commit " + currentCommit.getID());
         if (!currentCommit.getParentID(1).equals("")) {
-            System.out.println("Merge: " + currentCommit.getParentID(0).substring(0, 7) +
-                    " " + currentCommit.getParentID(1).substring(0, 7));
+            System.out.println("Merge: " + currentCommit.getParentID(0).substring(0, 7)
+                   + " " + currentCommit.getParentID(1).substring(0, 7));
             System.out.println("Date: " + currentCommit.timestampInString());
             System.out.println(currentCommit.getMessage());
         } else {
@@ -215,7 +215,7 @@ public class Repository {
         Stage stagingArea = getStagingArea();
         for (String filename : currentCommit.getTrackedFiles().keySet()) {
             File cwdFile = join(CWD, filename);
-            if (cwdFile.exists()){
+            if (cwdFile.exists()) {
                 Blob curVersion = new Blob(readContentsAsString(cwdFile), filename);
                 String trackedVersionID = currentCommit.getTrackedFileBlobID(filename);
                 if (!curVersion.getID().equals(trackedVersionID)) {
@@ -230,7 +230,7 @@ public class Repository {
             }
         }
 
-        for (String filename : stagingArea.getStagedFiles()){
+        for (String filename : stagingArea.getStagedFiles()) {
             File cwdFile = join(CWD, filename);
             if (cwdFile.exists()) {
                 Blob curVersion = new Blob(readContentsAsString(cwdFile), filename);
@@ -316,9 +316,10 @@ public class Repository {
         Set<String> trackedInCurrentBranch = currentCommit.getTrackedFiles().keySet();
         Set<String> trackedInTargetBranch = targetCommit.getTrackedFiles().keySet();
         for (String filename: plainFilenamesIn(CWD)) {
-            if (!trackedInCurrentBranch.contains(filename) &&
-                    trackedInTargetBranch.contains(filename)) {
-                exit("There is an untracked file in the way; delete it, or add and commit it first.");
+            if (!trackedInCurrentBranch.contains(filename)
+                   && trackedInTargetBranch.contains(filename)) {
+                exit("There is an untracked file in the way; delete it, " +
+                        "or add and commit it first.");
             }
         }
     }
@@ -337,8 +338,8 @@ public class Repository {
         renewCWDFile(currentCommit, filename);
     }
 
-    public static void checkoutBranch(String branchName){
-        if (join(HEADS, branchName).exists()){
+    public static void checkoutBranch(String branchName) {
+        if (join(HEADS, branchName).exists()) {
             if (branchName.equals(readContentsAsString(HEAD))) {
                 exit("No need to checkout the current branch");
             } else {
@@ -358,14 +359,14 @@ public class Repository {
 
     public static void branch(String branchName) {
         File newBranch = join(HEADS, branchName);
-        if (newBranch.exists()){
+        if (newBranch.exists()) {
             exit("A branch with that name already exists.");
         }
         String currentCommitID = getCurrentCommit().getID();
         writeContents(newBranch, currentCommitID);
     }
 
-    public static void rm_branch(String branchName) {
+    public static void rmBranch(String branchName) {
         if (!join(HEADS, branchName).exists()) {
             exit("A branch with that name does not exists.");
         }
@@ -375,7 +376,7 @@ public class Repository {
         join(HEADS, branchName).delete();
     }
 
-    public static void reset(String commitID){
+    public static void reset(String commitID) {
         Commit targetCommit = findCommit(commitID);
         if (targetCommit != null) {
             Commit currentCommit = getCurrentCommit();
@@ -392,38 +393,39 @@ public class Repository {
 
     /**
      * Runtime analysis:
-     * -------------------------------------------------------------------------------------------------------------
+     * ---------------------------------------------------
      * Cost model --> number of nodes (commits) accessed
      * In the worst case scenario the commits are evenly distributed between two branches and the
      * latest common ancestor is the initial commit
-     * -------------------------------------------------------------------------------------------------------------
+     * ---------------------------------------------------
      * Method 1 --> Nested for loops (not recommended)
-     * Explanation : Iterate over every single commit of any branch and at each time compare it with every
-     * commit of the other branch.
+     * Explanation : Iterate over every single commit of any branch and at each time compare
+     * it with every other commit of the other branch.
      * Runtime : O(N^2)
-     * Analysis : Outer loop has N/2 iterations and inner loop has N/2 iterations but inner loop is executed
-     * for N/2 times so the number of nodes accessed is N/2 + (N/2)^2. This shows that the time complexity is
-     * quadratic.
-     * -------------------------------------------------------------------------------------------------------------
+     * Analysis : Outer loop has N/2 iterations and inner loop has N/2 iterations but
+     * the inner loop is executed for N/2 times so the number of nodes accessed is N/2 + (N/2)^2.
+     * This shows that the time complexity is quadratic.
+     * ---------------------------------------------------
      * Method 2 --> Breadth first search
-     * Explanation : Start from the head commit of each branch and add them to queue. Maintain two sets of visited
-     * commits for each branch.
+     * Explanation : Start from the head commit of each branch and add them to queue.
+     * Maintain two sets of visited commits for each branch.
      * 1. Dequeue form either branch's queue
      * 2. Check if the other branch's visited set has the current commit
-     * !!! First commit that is found appearing in a branch and visited in the other branch is the split point
+     * !!! First commit that is found appearing in a branch and visited in the other branch
+     * is the split point
      * 3. Return if true or else add the current commit parents to the queue
      * 4. Repeat for the other branch until a split point is found.
      * Runtime : O(N)
-     * Analysis : Each commit is visited only once so if there are N commits in total there are N visits causing
-     * the runtime to be O(N).
+     * Analysis : Each commit is visited only once so if there are N commits in total
+     * there are N visits causing the runtime to be O(N).
 
      * @param commit1 head commit of the current branch
      * @param commit2 Head commit of the given branch
      * @return commitID of the latest common ancestor
      */
     private static Commit getSplitPoint(Commit commit1, Commit commit2) {
-        Set<String> branch1commits = BFS(commit1);
-        Set<String> branch2commits = BFS(commit2);
+        Set<String> branch1commits = bfs(commit1);
+        Set<String> branch2commits = bfs(commit2);
         for (String commitID : branch1commits) {
             if (branch2commits.contains(commitID)) {
                 return readObject(join(COMMITS, commitID), Commit.class);
@@ -432,7 +434,7 @@ public class Repository {
         return null;
     }
 
-    private static Set<String> BFS(Commit commit) {
+    private static Set<String> bfs(Commit commit) {
         Set<String> visited = new LinkedHashSet<>();
         Queue<Commit> pending = new LinkedList<>();
         pending.add(commit);
@@ -532,14 +534,14 @@ public class Repository {
             }
         }
         givenBranchFiles.removeAll(currentBranchFiles);
-        for (String filename : givenBranchFiles){
+        for (String filename : givenBranchFiles) {
             checkoutCommitFile(targetCommitID, filename);
             String blobID = targetCommit.getTrackedFileBlobID(filename);
             stagingArea.addRec(filename, blobID);
             join(BLOBS, blobID).renameTo(join(STAGED_FOR_REMOVAL, blobID));
         }
         stagingArea.save();
-        String commitMessage = "Merged " + targetBranch + " into " + readContentsAsString(HEAD) +".";
+        String commitMessage = "Merged " + targetBranch + " into " + readContentsAsString(HEAD) + ".";
         commit(commitMessage, targetCommitID);
         if (gotConflict) {
             System.out.println("Encountered a merge conflict.");
