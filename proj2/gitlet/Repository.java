@@ -452,8 +452,7 @@ public class Repository {
         return visited;
     }
 
-    private static void checkMergeErr(String targetBranch, Commit currentCommit,
-                                      Commit splitPoint, Commit targetCommit) {
+    private static Commit[] checkMergeErr(String targetBranch) {
         String currentBranch = readContentsAsString(HEAD);
         if (!join(HEADS, targetBranch).exists()) {
             exit("A branch with that name does not exists.");
@@ -464,6 +463,10 @@ public class Repository {
         if (targetBranch.equals(readContentsAsString(HEAD))) {
             exit("Cannot merge a branch with itself.");
         }
+        String targetCommitID = readContentsAsString(join(HEADS, targetBranch));
+        Commit targetCommit = readObject(join(COMMITS, targetCommitID), Commit.class);
+        Commit currentCommit = getCurrentCommit();
+        Commit splitPoint = getSplitPoint(currentCommit, targetCommit);
         catchUntrackedFiles(currentCommit, targetCommit);
         if (splitPoint.getID().equals(readContentsAsString(join(HEADS, targetBranch)))) {
             exit("Given branch is an ancestor of the current branch.");
@@ -472,14 +475,14 @@ public class Repository {
             checkoutBranch(targetBranch);
             exit("Current branch fast-forwarded.");
         }
+        return new Commit[]{currentCommit, targetCommit, splitPoint};
     }
 
     public static void merge(String targetBranch) {
-        String targetCommitID = readContentsAsString(join(HEADS, targetBranch));
-        Commit targetCommit = readObject(join(COMMITS, targetCommitID), Commit.class);
-        Commit currentCommit = getCurrentCommit();
-        Commit splitPoint = getSplitPoint(currentCommit, targetCommit);
-        checkMergeErr(targetBranch, currentCommit, splitPoint, targetCommit);
+        Commit[] heads = checkMergeErr(targetBranch);
+        Commit currentCommit = heads[0];
+        Commit targetCommit = heads[1];
+        Commit splitPoint = heads[2];
         boolean gotConflict = false;
         HashMap<String, String> splitPointMap = splitPoint.getTrackedFiles();
         HashMap<String, String> currentMap = currentCommit.getTrackedFiles();
@@ -492,7 +495,7 @@ public class Repository {
                         if (branchMap.get(filename) == null) {
                             rm(filename);
                         } else {
-                            checkoutCommitFile(targetCommitID, filename);
+                            checkoutCommitFile(targetCommit.getID(), filename);
                             String blobID = targetCommit.getTrackedFileBlobID(filename);
                             stagingArea.addRec(filename, blobID);
                             join(BLOBS, blobID).renameTo(join(STAGED_FOR_ADD, blobID));
@@ -540,7 +543,7 @@ public class Repository {
         }
         givenBranchFiles.removeAll(currentBranchFiles);
         for (String filename : givenBranchFiles) {
-            checkoutCommitFile(targetCommitID, filename);
+            checkoutCommitFile(targetCommit.getID(), filename);
             String blobID = targetCommit.getTrackedFileBlobID(filename);
             stagingArea.addRec(filename, blobID);
             join(BLOBS, blobID).renameTo(join(STAGED_FOR_REMOVAL, blobID));
@@ -548,30 +551,21 @@ public class Repository {
         stagingArea.save();
         String commitMessage = "Merged " + targetBranch + " into "
                 + readContentsAsString(HEAD) + ".";
-        commit(commitMessage, targetCommitID);
+        commit(commitMessage, targetCommit.getID());
         if (gotConflict) {
             System.out.println("Encountered a merge conflict.");
         }
     }
 
     private static String conflict(String filename, Commit currentCommit, Commit targetCommit) {
-        String newContent = "<<<<<<< HEAD\n" + getTrackedFileContents(currentCommit, filename);
+        String newContent = "<<<<<<< HEAD\n" + currentCommit.getTrackedFileContents(filename);
         newContent = newContent  + "=======\n";
-        newContent = newContent + getTrackedFileContents(targetCommit, filename);
+        newContent = newContent + currentCommit.getTrackedFileContents(filename);
         newContent = newContent  + ">>>>>>>\n";
         writeContents(join(CWD, filename), newContent);
         Blob conflictBlob = new Blob(newContent, filename);
         writeObject(join(STAGED_FOR_ADD, conflictBlob.getID()), conflictBlob);
         return conflictBlob.getID();
-    }
-
-    private static String getTrackedFileContents(Commit commit, String filename) {
-        if (commit.getTrackedFileBlobID(filename) == null) {
-            return "";
-        } else {
-            Blob blob = readObject(join(BLOBS, commit.getTrackedFileBlobID(filename)), Blob.class);
-            return blob.getContents();
-        }
     }
 
 

@@ -101,6 +101,15 @@ public class Commit implements Serializable {
         }
         return null;
     }
+
+    public String getTrackedFileContents(String filename) {
+        if (getTrackedFileBlobID(filename) == null) {
+            return "";
+        } else {
+            Blob blob = readObject(join(BLOBS, getTrackedFileBlobID(filename)), Blob.class);
+            return blob.getContents();
+        }
+    }
 }
 
 
