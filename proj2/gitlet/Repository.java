@@ -418,27 +418,33 @@ public class Repository {
      * @return commitID of the latest common ancestor
      */
     private static Commit getSplitPoint(Commit commit1, Commit commit2) {
-        HashMap<Commit, Integer> branch1visited = new HashMap<>();
-        Integer depth = 0;
-        while (true) {
-            branch1visited.put(commit1, depth);
-            if (commit1.getParentID(0).equals("")) {
-                break;
-            }
-            commit1 = readObject(join(COMMITS, commit1.getParentID(0)), Commit.class);
-            depth += 1;
-        }
-        while (true) {
-            if (branch1visited.containsKey(commit2)) {
-                return commit2;
-            }
-            if (!commit2.getParentID(0).equals("")) {
-                commit2 = readObject(join(COMMITS, commit2.getParentID(0)), Commit.class);
-            } else {
-                break;
+        ArrayList<Commit> branch1commits = BFS(commit1);
+        ArrayList<Commit> branch2commits = BFS(commit2);
+        for (Commit commit : branch1commits) {
+            if (branch2commits.contains(commit)) {
+                return commit;
             }
         }
         return null;
+    }
+
+    private static ArrayList<Commit> BFS(Commit commit) {
+        ArrayList<Commit> visited = new ArrayList<>();
+        Queue<Commit> pending = new LinkedList<>();
+        pending.add(commit);
+        while (!pending.isEmpty()) {
+            commit = pending.poll();
+            if (!visited.contains(commit)) {
+                visited.add(commit);
+            }
+            if (!commit.getParentID(0).equals("")) {
+                pending.add(readObject(join(COMMITS, commit.getParentID(0)), Commit.class));
+            }
+            if (!commit.getParentID(1).equals("")) {
+                pending.add(readObject(join(COMMITS, commit.getParentID(1)), Commit.class));
+            }
+        }
+        return visited;
     }
 
     public static void merge(String targetBranch) {
