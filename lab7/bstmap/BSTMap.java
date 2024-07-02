@@ -121,6 +121,11 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V>{
     }
 
     @Override
+    public Iterator<K> iterator() {
+        return this.keySet().iterator();
+    }
+
+    @Override
     public V remove(K key) {
         Node delNode = root;
         Node parent = null;
@@ -182,6 +187,7 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V>{
         if (predParent != null) {
             predParent.right = predecessor.left;
             predecessor.left = delNode.left;
+        }
         if (delNode == root) {
             root = predecessor;
         } else {
@@ -192,18 +198,12 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V>{
             }
         }
     }
-
-
+    
     @Override
     public V remove(K key, V value) {
         if (get(key) == value) {
             return remove(key);
         }
         return null;
-    }
-
-    @Override
-    public Iterator<K> iterator() {
-        return this.keySet().iterator();
     }
 }
