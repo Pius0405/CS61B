@@ -155,7 +155,7 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V>{
             } else if (delNode.left != null && delNode.right == null) {
                 if (delNode == root) {
                     root = delNode.left;
-                } else if (pos == "left"){
+                } else if (pos.equals("left")){
                     parent.left = delNode.left;
                 } else {
                     parent.right = delNode.left;
@@ -163,7 +163,7 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V>{
             } else if (delNode.left == null && delNode.right != null) {
                 if (delNode == root) {
                     root = delNode.right;
-                } else if (pos == "left"){
+                } else if (pos.equals("left")){
                     parent.left = delNode.right;
                 } else {
                     parent.right = delNode.right;
@@ -191,7 +191,7 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V>{
         if (delNode == root) {
             root = predecessor;
         } else {
-            if (pos == "left") {
+            if (pos.equals("left")) {
                 parent.left = predecessor;
             } else {
                 parent.right = predecessor;
@@ -201,7 +201,7 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V>{
 
     @Override
     public V remove(K key, V value) {
-        if (get(key) == value) {
+        if (get(key).equals(value)) {
             return remove(key);
         }
         return null;
