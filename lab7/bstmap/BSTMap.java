@@ -1,6 +1,5 @@
 package bstmap;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -123,12 +122,86 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V>{
 
     @Override
     public V remove(K key) {
-        throw new UnsupportedOperationException();
+        Node delNode = root;
+        Node parent = null;
+        String pos = null;
+        while (delNode != null) {
+            if (delNode.key.compareTo(key) == 0) {
+                break;
+            } else if (delNode.key.compareTo(key) > 0){
+                pos = "left";
+                parent = delNode;
+                delNode = delNode.left;
+            } else {
+                pos = "right";
+                parent = delNode;
+                delNode = delNode.right;
+            }
+        }
+        if (delNode != null) {
+            if (delNode.left == null && delNode.right == null) {
+                if (delNode == root) {
+                    root = null;
+                } else if (pos.equals("left")) {
+                    parent.left = null;
+                } else {
+                    parent.right = null;
+                }
+            } else if (delNode.left != null && delNode.right == null) {
+                if (delNode == root) {
+                    root = delNode.left;
+                } else if (pos == "left"){
+                    parent.left = delNode.left;
+                } else {
+                    parent.right = delNode.left;
+                }
+            } else if (delNode.left == null && delNode.right != null) {
+                if (delNode == root) {
+                    root = delNode.right;
+                } else if (pos == "left"){
+                    parent.left = delNode.right;
+                } else {
+                    parent.right = delNode.right;
+                }
+            } else {
+                HibbardDeletion(delNode, parent, pos);
+            }
+            return delNode.value;
+        }
+        return null;
     }
+
+    private void HibbardDeletion(Node delNode, Node parent, String pos) {
+        Node predecessor = delNode.left;
+        Node predParent = null;
+        while (predecessor.right != null) {
+            predParent = predecessor;
+            predecessor = predecessor.right;
+        }
+        if (delNode == root) {
+
+        }
+        predecessor.right = delNode.right;
+        predecessor.left = delNode.left;
+        predParent.right = predecessor.left;
+        if (delNode == root) {
+            root = predecessor;
+        } else {
+            if (pos == "left") {
+                parent.left = predecessor;
+            } else {
+                parent.right = predecessor;
+            }
+        }
+    }
+
 
     @Override
     public V remove(K key, V value) {
-        throw new UnsupportedOperationException();
+        if (get(key) == value) {
+            return remove(key);
+        }
+        return null;
     }
 
     @Override
