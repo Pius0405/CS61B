@@ -171,6 +171,7 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V>{
             } else {
                 HibbardDeletion(delNode, parent, pos);
             }
+            size -= 1;
             return delNode.value;
         }
         return null;
