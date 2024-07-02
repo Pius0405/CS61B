@@ -179,8 +179,9 @@ public class BSTMap<K extends Comparable<K>, V> implements Map61B<K, V>{
             predecessor = predecessor.right;
         }
         predecessor.right = delNode.right;
-        predParent.right = predecessor.left;
-        predecessor.left = delNode.left;
+        if (predParent != null) {
+            predParent.right = predecessor.left;
+            predecessor.left = delNode.left;
         if (delNode == root) {
             root = predecessor;
         } else {
