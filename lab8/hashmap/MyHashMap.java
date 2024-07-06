@@ -193,6 +193,7 @@ public class MyHashMap<K, V> implements Map61B<K, V> {
         for (Node node: buckets[index]) {
             if (node.key.equals(key) && node.value.equals(value)) {
                 buckets[index].remove(node);
+                --size;
                 return node.value;
             }
         }
@@ -205,6 +206,7 @@ public class MyHashMap<K, V> implements Map61B<K, V> {
         for (Node node: buckets[index]) {
             if (node.key.equals(key)) {
                 buckets[index].remove(node);
+                --size;
                 return node.value;
             }
         }
