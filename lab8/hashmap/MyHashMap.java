@@ -161,7 +161,7 @@ public class MyHashMap<K, V> implements Map61B<K, V> {
     public void put(K key, V value) {
         int index = getTableIndex(key, buckets.length);
         for (Node node : buckets[index]) {
-            if (node.key == key) {
+            if (node.key.equals(key)) {
                 node.value = value;
                 return;
             }
